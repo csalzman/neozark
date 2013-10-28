@@ -6,16 +6,57 @@
 
 <body>
 	<div id="game">
-		<canvas width="800" height="600" id="main"></canvas>
+		<canvas width="600" height="600" id="main" style="border:1px solid black"></canvas>
 	</div>
 	<script type="text/javascript" src="jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="jqueryhotkeys.js"></script>
 	<script type="text/javascript" src="key_status.js"></script>
 	
 	<script type="text/javascript">
+	
+	//Load Assets
 
+	var collision_image = new Image();
+	collision_image.src = "assets/Noezark_testscene_collision.png";
+	
+	var background_image = new Image();
+	background_image.src = "assets/Noezark_testscene1.png";
+	
+	var lyda_image = new Image();
+	lyda_image.src = "assets/lyda.png";
+	
+	var lyda_image_left = new Image();
+	lyda_image_left.src = "assets/lyda-left.png";
+	
+	var bobcat_image = new Image();
+	bobcat_image.src = "assets/bobcat_walk1_1.png";
+	
+	var background_mall_ground_image = new Image();
+	background_mall_ground_image = "assets/background_mall_ground_Collison.png";
+
+	var background_mall_ground_image = new Image();
+	background_mall_ground_image.src = "assets/background_mall_ground_Collison.png";
+	
+	var background_mall_grass_image = new Image();
+	background_mall_grass_image.src = "assets/background_mall_Grass.png";
+	
+	var background_mall_collison_image = new Image();
+	background_mall_collison_image.src = "assets/background_mall_ground_Collison.png";
+	
+	var background_mall_platforms = new Image();
+	background_mall_platforms.src = "assets/background_mall_platforms_collision.png";
+
+	/* Set Canvas contexts */
+				
+	var canvas = document.getElementById("main")		
+	var cxt = canvas.getContext("2d");
+
+	var canvas_width = canvas.width;
+    var canvas_height = canvas.height;
+	
 	var game_data = {
 		current_time: new Date(),
+		jump_max: 50,
 		x_velocity: 0,
 		y_velocity: 0,
 		x_max: 5,
@@ -23,106 +64,59 @@
 		x_acceleration: 1,
 		y_acceleration: 1.4
 	};
-	
-	var boxes = new Array(
-		{x:80, y:273, width:80, height:15},
-		{x:208, y:207, width:194, height:18},
-		{x:240, y:350, width:163, height:18},
-		{x:80, y:432, width:113, height:18}	
-	);
-	
-	function check_solid_ground() {
-		for (var i = 0; i < boxes.length; i++) {
-			//Check for bottom of lyda, top of box collision
-			if ((lyda.x > boxes[i].x-lyda.width && (lyda.x) < (boxes[i].x + boxes[i].width))
-				&& lyda.y <= boxes[i].y && (lyda.y + lyda.height) > (boxes[i].y)) {
-				console.log('lyda-bottom');
-				//Pin Lyda to the top of the platform
-				lyda.y = boxes[i].y - lyda.height + 1;
-				return lyda.platform = true;
-			}
-			//Check for top of lyda, bottom of box collision			
-			else if ((lyda.x > boxes[i].x-lyda.width && (lyda.x) < (boxes[i].x + boxes[i].width))
-				&& lyda.y <= (boxes[i].y + boxes[i].height) && (lyda.y + lyda.height) > (boxes[i].y + boxes[i].height)) {
-				console.log('lyda-top');
-				//Pin Lyda to the top of the platform
-				lyda.y = boxes[i].y + lyda.height;
-				// game_data.y_velocity = 10;
-				return lyda.platform = true;
-			}
-			else {
-				lyda.platform = false;
-			}
-		}
-	}
-	
-	function x_velocity_check(direction) {
-		switch(lyda.x_movement) {
-		case "left":
-			if (game_data.x_velocity > 0) { game_data.x_velocity = 0};
-			game_data.x_velocity <= (game_data.x_max * -1) ? game_data.x_velocity = game_data.x_velocity : game_data.x_velocity -= game_data.x_acceleration;
-		break;
-		case "right":
-			if (game_data.x_velocity < 0) { game_data.x_velocity = 0};
-			game_data.x_velocity == game_data.x_max ? game_data.x_velocity = game_data.x_velocity : game_data.x_velocity += game_data.x_acceleration;			
-		break;
 		
-		case "none":
-			game_data.x_velocity = 0;
-		break;	
-		}
-	}
-	
-	function y_velocity_check(direction) {
-		switch(lyda.y_movement) {
-		case "down":
-			if (game_data.y_velocity <= 0) { game_data.y_velocity = 0.5};
-			game_data.y_velocity >= game_data.y_max ? game_data.y_velocity = game_data.y_max : game_data.y_velocity = Math.ceil(game_data.y_velocity * game_data.y_acceleration);			
-			console.log(game_data.y_velocity);
-		break;
-		case "up":
-			lyda.y -= 1;
-			if (game_data.y_velocity >= 0) { game_data.y_velocity = -0.5};
-			game_data.y_velocity >= (game_data.y_max * -1) ? game_data.y_velocity = (game_data.y_max * -1) : game_data.y_velocity = (Math.ceil(game_data.y_velocity * game_data.y_acceleration)) * -1;			
-			console.log(game_data.y_velocity);
-		break;
-		}
-	}
-	
-	
-	var collision_image = new Image();
-	collision_image.src = "Noezark_testscene_collision.png";
-	
-	var background_image = new Image();
-	background_image.src = "Noezark_testscene1.png";
-	
 	var background = {
-		x:800,
-		y:600,
+		x:canvas_width,
+		y:canvas_height,
+		width:768,
 		leftmost:0,
 		topmost:0,
 		draw: function() {
 			//context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
-			cxt.drawImage(background_image, this.leftmost, this.topmost, this.x, this.y, 0, 0, this.x, this.y);
+			cxt.drawImage(background_mall_ground_image, this.leftmost, this.topmost, this.x, this.y, 0, 0, this.x, this.y);
+			cxt.drawImage(background_mall_grass_image, this.leftmost, this.topmost, this.x, this.y, 0, 0, this.x, this.y);
+
+
 		}	
 	};
 	
 	var collision = {
-		x:800,
-		y:600,
+		x:canvas_width,
+		y:canvas_height,
 		leftmost:50,
 		topmost:100,
 		draw: function() {
 			//context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
-			cxt.drawImage(collision_image, background.leftmost, background.topmost, background.x, background.y, 0, 0, background.x, background.y);
+			cxt.drawImage(background_mall_collison_image, background.leftmost, background.topmost, background.x, background.y, 0, 0, background.x, background.y);
+			cxt.drawImage(background_mall_platforms, background.leftmost, background.topmost, background.x, background.y, 0, 0, background.x, background.y);
 		}	
-		
 	}
 	
-	var lyda_image = new Image();
-	lyda_image.src = "lyda.png";
-	var lyda_image_left = new Image();
-	lyda_image_left.src = "lyda-left.png";
+	boxes = new Array(
+		{x:function() {return 0}, y:418, width:canvas_width, height:canvas_height-this.y},
+		{x:function() {return 64 - background.leftmost}, y:257, width:192, height:10},
+		{x:function() {return 64-background.leftmost}, y:337, width:81, height:10},
+		{type: "bobcat", x:function() {return 80 - background.leftmost}, y:216, width:26, height:41},		
+		{x:function() {return 176-background.leftmost}, y:337, width:176, height:10}	
+	);	
+
+
+	enemies = new Array(
+		{type: "bobcat", x:function() {return 80 - background.leftmost}, y:216, width:26, height:41},
+		{type: "bobcat", x:function() {return 90 - background.leftmost}, y:337, width:26, height:41},
+		{type: "bobcat", x:function() {return 190 - background.leftmost}, y:337, width:26, height:41}	
+	);
+	
+	var enemy = {
+		x: enemies[0].x(),
+		y: enemies[0].y,
+		width:enemies[0].width,
+		height:enemies[0].height,
+		draw: function() {
+			cxt.drawImage(bobcat_image, enemies[0].x(), this.y, this.width, this.height);
+		}
+	}
+
 	
 	var lyda = {
 		x:100,
@@ -134,8 +128,8 @@
 		y_direction: "none",
 		x_movement: "none",
 		platform: false,	
-		jump: false,
-		jump_time: undefined,
+		jump: 0,
+		can_jump: false,
 		draw: function() {
 			if (this.x_direction == "right") {
 				var crop_left = this.keyframe * this.width;
@@ -153,94 +147,203 @@
 		width: background_image.width
 	}
 	
-	/* Set Canvas contexts */
-				
-		var canvas = document.getElementById("main")		
-		var cxt = canvas.getContext("2d");
+	/* Functions
+	// Game functions
+	//
+	//	*/
+	
+	
+	//TODO: rewrite for a check between any two objects
+	//Currently checks whether Lyda is interacting with a solid object
+	function check_solid_ground() {
 
-		var canvas_width = canvas.width;
-        var canvas_height = canvas.height;
+		for (var i = 0; i < boxes.length; i++) {
+			
+			//set overlap
+			
+			var collision_offset = 20;
+			//Check for bottom of lyda, top of box collision
 
-		//Record keypresses and any other info that should be checked or updated every frame
-		function update() {
-			check_solid_ground();
-			current_time = new Date();
-			
-			if (keydown.left) {
-				//Point her in the right direction
-				lyda.x_direction = "left";		
-				//Set movement in right direction		
-				lyda.x_movement = "left";
-				//Continue velocity
-				x_velocity_check(lyda.x_movement);
-				//Advance animation frame
-				lyda.keyframe == 9 ? lyda.keyframe = 0 : lyda.keyframe += 1;
+			if ((lyda.x - collision_offset > boxes[i].x()-lyda.width && (lyda.x+collision_offset) < (boxes[i].x() + boxes[i].width))
+				&& lyda.y <= boxes[i].y && (lyda.y + lyda.height) > (boxes[i].y)) {
+				console.log('lyda-bottom');
+				//Pin Lyda to the top of the platform
+				lyda.y = boxes[i].y - lyda.height + 1;
+				return lyda.platform = "platform_top";
 			}
-			
-			if (keydown.right) {
-				lyda.x_direction = "right";
-				lyda.x_movement = "right";
-				x_velocity_check(lyda.x_movement);
-				lyda.keyframe == 9 ? lyda.keyframe = 0 : lyda.keyframe += 1;
+			//Check for top of lyda, bottom of box collision			
+			else if ((lyda.x - collision_offset > boxes[i].x()-lyda.width && (lyda.x + collision_offset) < (boxes[i].x() + boxes[i].width))
+				&& lyda.y <= (boxes[i].y + boxes[i].height) && (lyda.y + lyda.height) > (boxes[i].y + boxes[i].height)) {
+				console.log('lyda-top');
+				//Pin Lyda to the bottom of the platform
+				lyda.y = (boxes[i].y + boxes[i].height);
+				// game_data.y_velocity = 10;
+				return lyda.platform = "platform_bottom";
 			}
-			
-			//Not moving left or right
-			if (!keydown.left && !keydown.right) {
-				lyda.x_movement = "none";
-				x_velocity_check(lyda.x_movement);
+			else {
+				lyda.platform = false;
 			}
-			
-			//Aim gun in appropriate direction
-			if (keydown.down) {
-				lyda.y_direction = "down";
-				lyda.keyframe = 2;
-			}
-			if (keydown.up) {
-				lyda.y_direction = "up";
-				lyda.keyframe = 2;
-			}
+		}
+	}
+	
+	//TODO make this a generic check
+	function x_velocity_check(direction) {
+		switch(lyda.x_movement) {
+		case "left":
+			if (game_data.x_velocity > 0) { game_data.x_velocity = 0};
+			game_data.x_velocity <= (game_data.x_max * -1) ? game_data.x_velocity = game_data.x_velocity : game_data.x_velocity -= game_data.x_acceleration;
+		break;
+		case "right":
+			if (game_data.x_velocity < 0) { game_data.x_velocity = 0};
+			game_data.x_velocity == game_data.x_max ? game_data.x_velocity = game_data.x_velocity : game_data.x_velocity += game_data.x_acceleration;			
+		break;
+		
+		case "none":
+			game_data.x_velocity = 0;
+		break;	
+		}
+	}
+	
+	//TODO make this a generic check
+	function y_velocity_check(direction) {
+		switch(lyda.y_movement) {
+		case "down":
+			if (game_data.y_velocity <= 0) { game_data.y_velocity = 0.5};
+			game_data.y_velocity >= game_data.y_max ? game_data.y_velocity = game_data.y_max : game_data.y_velocity = Math.ceil(game_data.y_velocity * game_data.y_acceleration);			
+			console.log(game_data.y_velocity);
+			console.log("down");			
+		break;
+		case "up":
+			lyda.y -= 1;
+			if (game_data.y_velocity >= 0) { game_data.y_velocity = -0.5};
+			game_data.y_velocity >= (game_data.y_max * -1) ? game_data.y_velocity = (game_data.y_max * -1) : game_data.y_velocity = (Math.ceil(game_data.y_velocity * game_data.y_acceleration)) * -1;			
+			console.log(game_data.y_velocity);
+			console.log("up");
+		break;
+		}
+	}
 
-			//Jumping
-			if (keydown.b) {
-				lyda.jump = true;
-				lyda.y_movement = "up";
-				y_velocity_check(lyda.y_movement);
+	//TODO Pull out keyframe animations from update loop, check on direction/action
+	//Record keypresses and any other info that should be checked or updated every frame
+	function update() {
+		check_solid_ground();
+		current_time = new Date();
+		
+		if (keydown.left) {
+			//Point her in the right direction
+			lyda.x_direction = "left";		
+			//Set movement in right direction		
+			lyda.x_movement = "left";
+			//Continue velocity
+			x_velocity_check(lyda.x_movement);
+			//Advance animation frame
+			lyda.keyframe == 9 ? lyda.keyframe = 0 : lyda.keyframe += 1;
+		}
+		
+		if (keydown.right) {
+			lyda.x_direction = "right";
+			lyda.x_movement = "right";
+			x_velocity_check(lyda.x_movement);
+			lyda.keyframe == 9 ? lyda.keyframe = 0 : lyda.keyframe += 1;
+		}
+		
+		//Not moving left or right
+		if (!keydown.left && !keydown.right) {
+			lyda.x_movement = "none";
+			x_velocity_check(lyda.x_movement);
+		}
+		
+		//TODO Aim gun in appropriate direction
+		if (keydown.down) {
+			lyda.y_direction = "down";
+			lyda.keyframe = 2;
+		}
+		if (keydown.up) {
+			lyda.y_direction = "up";
+			lyda.keyframe = 2;
+		}
 
-				// game_data.y_velocity -= 1;
-			}
-			else if (!keydown.b) {
-				lyda.jump = false;
-				// game_data.y_velocity += 1;
-			}
+		//Jumping
+		if (keydown.b && lyda.jump <= game_data.jump_max && lyda.can_jump != false) {
+			lyda.y_movement = "up";
+			lyda.y_direction = "up";
+			lyda.keyframe = 2;			
+			y_velocity_check(lyda.y_movement);
+			lyda.jump += 5;
+		}
+		else if (keydown.b && lyda.jump >= game_data.jump_max) {
+			lyda.y_movement = "down";
+			lyda.y_direction = "down";			
+			lyda.keyframe = 2;			
+			y_velocity_check(lyda.y_movement);
+		}
+		else if (!keydown.b) {
+			lyda.can_jump = false;
+			lyda.jump < 0 ? lyda.jump = lyda.jump : lyda.jump -= 5;
+			game_data.y_velocity += 1;
+		}
+		
+		//Handle platform logic for lyda
+		if (lyda.platform == false && lyda.jump == false) {
+			lyda.y_movement = "down";
+			y_velocity_check(lyda.y_movement);
+		}
+		else if (lyda.platform == "platform_top") {
+			lyda.can_jump = true;
+			lyda.jump = 0;
+			game_data.y_velocity = 0;
+		}
+		else if (lyda.platform == "platform_bottom") {
+			game_data.y_velocity = .0001;
+		}
 			
-			if (lyda.platform == false && lyda.jump == false) {
-				lyda.y_movement = "down";
-				y_velocity_check(lyda.y_movement);
-			}
-			else if (lyda.platform == true) {
-				game_data.y_velocity = 0;
-			}
-				
-			
-			lyda.x += game_data.x_velocity;
+		
+		//Move level, lyda, or both
+		
+		//Viewport at right edge of level
+		if (background.leftmost + canvas_width >= background.width && lyda.x_direction == "right") {
+			lyda.x < canvas.width - 50 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
 			lyda.y += game_data.y_velocity;
+		}
+		//Viewport at left edge of level
+		else if (background.leftmost <= 1 && lyda.x_direction == "left") {
+			lyda.x > 1 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
+			lyda.y += game_data.y_velocity;
+		}
+		//Viewport move left
+		else if (lyda.x < 250 && background.leftmost > 1 && lyda.x_direction == "left") {
+			background.leftmost += game_data.x_velocity;
+			lyda.y += game_data.y_velocity;			
 			
 		}
-
-	//Set frame rate
-		var fps = 30;
-
-	//Main drawing function calls itself, runs update, and draws everything it should
-		function draw() {
-			setTimeout(function() {
-				requestAnimationFrame(draw);
-				update();
-				
-				background.draw();
-				collision.draw();
-				lyda.draw();
-			}, 1000 / fps);
+		//Viewport move right
+		else if (lyda.x > 350 && background.leftmost + canvas_width < background.width && lyda.x_direction == "right") {
+			background.leftmost += game_data.x_velocity;
+			lyda.y += game_data.y_velocity;
+		}		
+		
+		//Viewport doesn't move, lyda does
+		else {
+			lyda.x += game_data.x_velocity;
+			lyda.y += game_data.y_velocity;			
 		}
+	}
+
+//Set frame rate
+	var fps = 30;
+
+//Main drawing function calls itself, runs update, and draws everything it should
+	function draw() {
+		setTimeout(function() {
+			requestAnimationFrame(draw);
+			update();
+			cxt.clearRect(0,0,canvas_width,canvas_height);
+			background.draw();
+			collision.draw();
+			enemy.draw();
+			lyda.draw();
+		}, 1000 / fps);
+	}
 
 	//Start it all off
 		draw();
