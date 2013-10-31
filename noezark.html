@@ -6,7 +6,7 @@
 
 <body>
 	<div id="game">
-		<canvas width="600" height="600" id="main" style="border:1px solid black"></canvas>
+		<canvas width="600" height="450" id="main" style="border:1px solid black"></canvas>
 	</div>
 	<script type="text/javascript" src="javascript/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="javascript/jqueryhotkeys.js"></script>
@@ -47,6 +47,9 @@
 	var background_mall_platforms = new Image();
 	background_mall_platforms.src = "assets/background_mall_platforms_collision.png";
 
+	var foreground_grass_image = new Image();
+	foreground_grass_image.src = "assets/foreground-grass.png";
+
 	/* Set Canvas contexts */
 				
 	var canvas = document.getElementById("main")		
@@ -70,6 +73,7 @@
 			background_mall_ground_image, 
 			background_mall_collison_image
 		),
+		foreground: new Array(),
 		//Walls and platforms
 		collision_map: new Array(
 			{x:0, y:418, width:800, height:30},
@@ -79,8 +83,8 @@
 		),
 		//Enemies and locations
 		enemies: new Array(
-			{type: "Bobcat", x:100, y:200}, 
-			{type: "Bobcat", x:0, y:0}
+			{type: "Bobcat", x:95, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:90, y:305, width:26, height:41}
 		),
 		//Doors are entrance and exit points on map
 		doors: new Array(
@@ -93,7 +97,6 @@
 		)
 	}
 	
-	
 	var location1 = {
 		//Begin information specific to the location if any
 		
@@ -101,9 +104,12 @@
 		//Begin information needed for all locations
 		//List all elements, will be drawn in sequence
 		background: new Array(
-			background_mall_grass_image,
+			// background_mall_grass_image,
 			background_mall_ground_image, 
 			background_mall_collison_image
+		),
+		foreground: new Array(
+			foreground_grass_image
 		),
 		//Walls and platforms
 		collision_map: new Array(
@@ -114,7 +120,7 @@
 		),
 		//Enemies and locations
 		enemies: new Array(
-			{type: "Bobcat", x:400, y:300}, 
+			{type: "Bobcat", x:450, y:350}, 
 			{type: "Bobcat", x:10, y:10}
 		),
 		//Doors are entrance and exit points on map
@@ -152,6 +158,13 @@
 			cxt.drawImage(location.background[i], game_data.screen_left, game_data.screen_top);
 		}
 	}
+	
+	function foreground_draw(location) {
+		var foreground_array = location.foreground.length;
+		for (var i = 0; i < foreground_array; i++ ) {
+			cxt.drawImage(location.foreground[i], game_data.screen_left, game_data.screen_top);
+		}
+	}
 		
 	//Returns the image data for the enemy type
 	function enemy_image(type) {
@@ -186,11 +199,11 @@
 	//TODO move any character specific data from other objects into here
 	//Add weapon data
 	var lyda = {
-		x:100,
-		y:100,
-		width:38,
-		height:42,
-		keyframe:0,
+		x: 100,
+		y: 100,
+		width: 38,
+		height: 42,
+		keyframe: 0,
 		x_direction: "left",
 		y_direction: "none",
 		x_movement: "none",
@@ -210,36 +223,34 @@
 	}
 	
 	//TODO: rewrite for a check between any two objects in the game and return which side each object is being interacted with
-	//Currently checks whether Lyda is interacting with a solid object
-	function check_solid_ground() {
-	
-		for (var i = 0; i < boxes.length; i++) {
-			
-			//set overlap
-			
-			var collision_offset = 20;
-			//Check for bottom of lyda, top of box collision
-	
-			if ((lyda.x - collision_offset > boxes[i].x()-lyda.width && (lyda.x+collision_offset) < (boxes[i].x() + boxes[i].width))
-				&& lyda.y <= boxes[i].y && (lyda.y + lyda.height) > (boxes[i].y)) {
-				console.log('lyda-bottom');
-				//Pin Lyda to the top of the platform
-				lyda.y = boxes[i].y - lyda.height + 1;
-				return lyda.platform = "platform_top";
+	function collision_check(object1, object2) {
+
+		var collided = {left:false, right:false, top:false, bottom:false};
+
+	    if (object1.x > object2.x
+			&& object1.x < object2.x + object2.width) 
+			{
+				collided.left = true;
 			}
-			//Check for top of lyda, bottom of box collision			
-			else if ((lyda.x - collision_offset > boxes[i].x()-lyda.width && (lyda.x + collision_offset) < (boxes[i].x() + boxes[i].width))
-				&& lyda.y <= (boxes[i].y + boxes[i].height) && (lyda.y + lyda.height) > (boxes[i].y + boxes[i].height)) {
-				console.log('lyda-top');
-				//Pin Lyda to the bottom of the platform
-				lyda.y = (boxes[i].y + boxes[i].height);
-				// game_data.y_velocity = 10;
-				return lyda.platform = "platform_bottom";
+		if (object1.x + object1.width > object2.x
+			&& object1.x + object1.width < object2.x + object2.width) 
+			{
+				collided.right = true;
 			}
-			else {
-				lyda.platform = false;
+		if (object1.y > object2.y
+			&& object1.y < object2.y + object2.height)
+			{
+				collided.top = true;
 			}
-		}
+		if (object1.y + object1.height > object2.y
+			&& object1.y + object1.height < object2.y + object2.height)
+			{
+				collided.bottom = true;
+			}
+		if (collided.left && (collided.bottom || collided.top)) {console.log('left')}
+		if (collided.right && (collided.bottom || collided.top)) {console.log('right')}
+		if (collided.bottom && (collided.left || collided.right)) {console.log('bottom')}
+		if (collided.top && (collided.left || collided.right)) {console.log('top')}						
 	}
 	
 	//TODO make this a generic check to move any object in the correct direction
@@ -285,12 +296,17 @@
 	//Call functions to update object data, ie move objects, or destroy them
 	//Additionally, check anything that should be checked each frame
 	function update() {
-		
+		collision_check(location0.enemies[0], location0.enemies[1]);
 		//Simple check to switch to a location and make sure everything is working
 		if (keydown.b) {
 			game_data.location = location1;
 		}
 		
+		if (keydown.left) { location0.enemies[0].x -= 1}
+		if (keydown.right) { location0.enemies[0].x += 1}		
+		if (keydown.up) { location0.enemies[0].y -= 1}
+		if (keydown.down) { location0.enemies[0].y += 1}		
+
 		// check_solid_ground();
 		// current_time = new Date();
 		// 
@@ -403,14 +419,7 @@
 			requestAnimationFrame(draw);
 			//Run update loop
 			update();
-<<<<<<< HEAD
-			cxt.clearRect(0,0,canvas_width,canvas_height);
-			background.draw();
-			collision.draw();
-			enemy.draw();
-			lyda.draw();
 
-=======
 			//Clear the canvas completely
 			cxt.clearRect(0, 0, canvas.width, canvas.height);
 			//Draw the current location with its data
@@ -419,8 +428,11 @@
 			enemy_draw(game_data.location);
 			//Draw the current location's item data
 			//Draw Lyda along with her stat
+			
+			//Draw foreground elements
+			foreground_draw(game_data.location)
 			//lyda.draw();
->>>>>>> def1bd51af37a22b3127f6f242eb4e5f602e0045
+
 		}, 1000 / fps);
 	}
 
