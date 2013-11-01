@@ -83,8 +83,19 @@
 		),
 		//Enemies and locations
 		enemies: new Array(
-			{type: "Bobcat", x:95, y:310, width:26, height:41}, 
-			{type: "Bobcat", x:90, y:305, width:26, height:41}
+			{type: "Bobcat", x:80, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:81, y:305, width:26, height:41},
+			{type: "Bobcat", x:92, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:93, y:305, width:26, height:41},
+			{type: "Bobcat", x:94, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:95, y:305, width:26, height:41},
+			{type: "Bobcat", x:96, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:97, y:305, width:26, height:41},
+			{type: "Bobcat", x:98, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:99, y:305, width:26, height:41},
+			{type: "Bobcat", x:100, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:80, y:305, width:26, height:41}						
+			
 		),
 		//Doors are entrance and exit points on map
 		doors: new Array(
@@ -165,6 +176,15 @@
 			cxt.drawImage(location.foreground[i], game_data.screen_left, game_data.screen_top);
 		}
 	}
+
+	function collision_map_draw(location) {
+		var collision_map_array = location.collision_map.length;
+		for (var i = 0; i < collision_map_array; i++ ) {
+			cxt.fillStyle="#FF0000";
+			cxt.fillRect(location.collision_map[i].x, location.collision_map[i].y, location.collision_map[i].width, location.collision_map[i].height);
+		}
+	}
+	
 		
 	//Returns the image data for the enemy type
 	function enemy_image(type) {
@@ -199,219 +219,107 @@
 	//TODO move any character specific data from other objects into here
 	//Add weapon data
 	var lyda = {
+		//Initial starting position will be determined by level and direction entered
 		x: 100,
-		y: 100,
+		y: 377,
+		//Size of sprite
 		width: 38,
 		height: 42,
+		//Animation keyframe
 		keyframe: 0,
-		x_direction: "left",
-		y_direction: "none",
-		x_movement: "none",
-		platform: false,	
+		//x can be left or right, y can be up, down, or forward
+		facing_direction: {x: "left", y: "forward"},
+		//Jump logic
+		platform: {top:false, bottom:false, left:false, right:false},
 		jump: 0,
 		can_jump: false,
+		//Drawing functions
+		//TODO keyframe animation based on facing_direction x and y
 		draw: function() {
-			if (this.x_direction == "right") {
+			if (this.facing_direction.x == "right") {
 				var crop_left = this.keyframe * this.width;
 				cxt.drawImage(lyda_image, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
 			}
-			else {
+			else if (this.facing_direction.x == "left") {
 				var crop_left = this.keyframe * this.width;
 				cxt.drawImage(lyda_image_left, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
 			}
 		}
 	}
 	
-	//TODO: rewrite for a check between any two objects in the game and return which side each object is being interacted with
-	function collision_check(object1, object2) {
-
-		var collided = {left:false, right:false, top:false, bottom:false};
-
-	    if (object1.x > object2.x
-			&& object1.x < object2.x + object2.width) 
-			{
-				collided.left = true;
-			}
-		if (object1.x + object1.width > object2.x
-			&& object1.x + object1.width < object2.x + object2.width) 
-			{
-				collided.right = true;
-			}
-		if (object1.y > object2.y
-			&& object1.y < object2.y + object2.height)
-			{
-				collided.top = true;
-			}
-		if (object1.y + object1.height > object2.y
-			&& object1.y + object1.height < object2.y + object2.height)
-			{
-				collided.bottom = true;
-			}
-		if (collided.left && (collided.bottom || collided.top)) {console.log('left')}
-		if (collided.right && (collided.bottom || collided.top)) {console.log('right')}
-		if (collided.bottom && (collided.left || collided.right)) {console.log('bottom')}
-		if (collided.top && (collided.left || collided.right)) {console.log('top')}						
+	//Collision check code pulled from: http://www.somethinghitme.com/2013/04/16/creating-a-canvas-platformer-tutorial-part-tw/
+	//TODO: Only check for collision between objects that are nearby each other
+	function colCheck(shapeA, shapeB) {
+	    // get the vectors to check against
+	    var vX = (shapeA.x + (shapeA.width / 2)) - (shapeB.x + (shapeB.width / 2)),
+	        vY = (shapeA.y + (shapeA.height / 2)) - (shapeB.y + (shapeB.height / 2)),
+	        // add the half widths and half heights of the objects
+	        hWidths = (shapeA.width / 2) + (shapeB.width / 2),
+	        hHeights = (shapeA.height / 2) + (shapeB.height / 2),
+	        colDir = null;
+ 
+	    if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+			var oX = hWidths - Math.abs(vX),
+				oY = hHeights - Math.abs(vY);
+			if (oX >= oY) {
+	            if (vY > 0) {
+	                colDir = "t";
+	                shapeA.y += oY;
+	            } 
+				else {
+	                colDir = "b";
+	                shapeA.y -= oY;
+	            }
+	        } 
+		else {
+            if (vX > 0) {
+                colDir = "l";
+                shapeA.x += oX;
+            } else {
+                colDir = "r";
+                shapeA.x -= oX;
+            }
+	    }
+		console.log(colDir);
+	    return colDir;
 	}
+}
+
 	
-	//TODO make this a generic check to move any object in the correct direction
-	//Takes objects' velocity to the game data velocity, current viewport, and pathfinding into consideration	
-	function x_velocity_check(direction) {
-		switch(lyda.x_movement) {
-		case "left":
-			if (game_data.x_velocity > 0) { game_data.x_velocity = 0};
-			game_data.x_velocity <= (game_data.x_max * -1) ? game_data.x_velocity = game_data.x_velocity : game_data.x_velocity -= game_data.x_acceleration;
-		break;
-		case "right":
-			if (game_data.x_velocity < 0) { game_data.x_velocity = 0};
-			game_data.x_velocity == game_data.x_max ? game_data.x_velocity = game_data.x_velocity : game_data.x_velocity += game_data.x_acceleration;			
-		break;
-		
-		case "none":
-			game_data.x_velocity = 0;
-		break;	
-		}
-	}
-	
-	//TODO make this a generic check to move any object in the correct direction
-	//Takes objects' velocity to the game data velocity, current viewport, and pathfinding into consideration
-	function y_velocity_check(direction) {
-		switch(lyda.y_movement) {
-		case "down":
-			if (game_data.y_velocity <= 0) { game_data.y_velocity = 0.5};
-			game_data.y_velocity >= game_data.y_max ? game_data.y_velocity = game_data.y_max : game_data.y_velocity = Math.ceil(game_data.y_velocity * game_data.y_acceleration);			
-			console.log(game_data.y_velocity);
-			console.log("down");			
-		break;
-		case "up":
-			lyda.y -= 1;
-			if (game_data.y_velocity >= 0) { game_data.y_velocity = -0.5};
-			game_data.y_velocity >= (game_data.y_max * -1) ? game_data.y_velocity = (game_data.y_max * -1) : game_data.y_velocity = (Math.ceil(game_data.y_velocity * game_data.y_acceleration)) * -1;			
-			console.log(game_data.y_velocity);
-			console.log("up");
-		break;
-		}
-	}
-
 	//TODO Update should do a bunch of stuff based on key combinations, or lack thereof
 	//Call functions to update object data, ie move objects, or destroy them
 	//Additionally, check anything that should be checked each frame
 	function update() {
-		collision_check(location0.enemies[0], location0.enemies[1]);
+		
+		for (var i = 0; i < game_data.location.collision_map.length; i++) {
+			colCheck(lyda, game_data.location.collision_map[i]);
+		}
+		
+		for (var i = 0; i < game_data.location.enemies.length; i++) {
+			for (var p = 0; p < game_data.location.collision_map.length; p++) {
+				colCheck(game_data.location.enemies[i], game_data.location.collision_map[p]);
+			}
+			game_data.location.enemies[i].x += 1;
+			game_data.location.enemies[i].y += 1;			
+		}
 		//Simple check to switch to a location and make sure everything is working
 		if (keydown.b) {
 			game_data.location = location1;
 		}
+		if (keydown.d) {
+			game_data.location.enemies.push({type: "Bobcat", x:80, y:310, width:26, height:41});
+		}
 		
-		if (keydown.left) { location0.enemies[0].x -= 1}
-		if (keydown.right) { location0.enemies[0].x += 1}		
-		if (keydown.up) { location0.enemies[0].y -= 1}
-		if (keydown.down) { location0.enemies[0].y += 1}		
+		
+		if (keydown.left) { lyda.x -= 2 }
+		if (keydown.right) { lyda.x += 2 }		
+		if (keydown.up) { lyda.y -= 2 }
+		if (keydown.down) { lyda.y += 2 }		
 
-		// check_solid_ground();
-		// current_time = new Date();
-		// 
-		// if (keydown.left) {
-		// 	//Point her in the right direction
-		// 	lyda.x_direction = "left";		
-		// 	//Set movement in right direction		
-		// 	lyda.x_movement = "left";
-		// 	//Continue velocity
-		// 	x_velocity_check(lyda.x_movement);
-		// 	//Advance animation frame
-		// 	lyda.keyframe == 9 ? lyda.keyframe = 0 : lyda.keyframe += 1;
-		// }
-		// 
-		// if (keydown.right) {
-		// 	lyda.x_direction = "right";
-		// 	lyda.x_movement = "right";
-		// 	x_velocity_check(lyda.x_movement);
-		// 	lyda.keyframe == 9 ? lyda.keyframe = 0 : lyda.keyframe += 1;
-		// }
-		// 
-		// //Not moving left or right
-		// if (!keydown.left && !keydown.right) {
-		// 	lyda.x_movement = "none";
-		// 	x_velocity_check(lyda.x_movement);
-		// }
-		// 
-		// //TODO Aim gun in appropriate direction
-		// if (keydown.down) {
-		// 	lyda.y_direction = "down";
-		// 	lyda.keyframe = 2;
-		// }
-		// if (keydown.up) {
-		// 	lyda.y_direction = "up";
-		// 	lyda.keyframe = 2;
-		// }
-		// 
-		// //Jumping
-		// if (keydown.b && lyda.jump <= game_data.jump_max && lyda.can_jump != false) {
-		// 	lyda.y_movement = "up";
-		// 	lyda.y_direction = "up";
-		// 	lyda.keyframe = 2;			
-		// 	y_velocity_check(lyda.y_movement);
-		// 	lyda.jump += 5;
-		// }
-		// else if (keydown.b && lyda.jump >= game_data.jump_max) {
-		// 	lyda.y_movement = "down";
-		// 	lyda.y_direction = "down";			
-		// 	lyda.keyframe = 2;			
-		// 	y_velocity_check(lyda.y_movement);
-		// }
-		// else if (!keydown.b) {
-		// 	lyda.can_jump = false;
-		// 	lyda.jump < 0 ? lyda.jump = lyda.jump : lyda.jump -= 5;
-		// 	game_data.y_velocity += 1;
-		// }
-		// 
-		// //Handle platform logic for lyda
-		// if (lyda.platform == false && lyda.jump == false) {
-		// 	lyda.y_movement = "down";
-		// 	y_velocity_check(lyda.y_movement);
-		// }
-		// else if (lyda.platform == "platform_top") {
-		// 	lyda.can_jump = true;
-		// 	lyda.jump = 0;
-		// 	game_data.y_velocity = 0;
-		// }
-		// else if (lyda.platform == "platform_bottom") {
-		// 	game_data.y_velocity = .0001;
-		// }
-		// 	
-		// 
-		// //Move level, lyda, or both
-		// 
-		// //Viewport at right edge of level
-		// if (background.leftmost + canvas_width >= background.width && lyda.x_direction == "right") {
-		// 	lyda.x < canvas.width - 50 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
-		// 	lyda.y += game_data.y_velocity;
-		// }
-		// //Viewport at left edge of level
-		// else if (background.leftmost <= 1 && lyda.x_direction == "left") {
-		// 	lyda.x > 1 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
-		// 	lyda.y += game_data.y_velocity;
-		// }
-		// //Viewport move left
-		// else if (lyda.x < 250 && background.leftmost > 1 && lyda.x_direction == "left") {
-		// 	background.leftmost += game_data.x_velocity;
-		// 	lyda.y += game_data.y_velocity;			
-		// 	
-		// }
-		// //Viewport move right
-		// else if (lyda.x > 350 && background.leftmost + canvas_width < background.width && lyda.x_direction == "right") {
-		// 	background.leftmost += game_data.x_velocity;
-		// 	lyda.y += game_data.y_velocity;
-		// }		
-		// 
-		// //Viewport doesn't move, lyda does
-		// else {
-		// 	lyda.x += game_data.x_velocity;
-		// 	lyda.y += game_data.y_velocity;			
-		// }
 	}
 
 //Set frame rate
-	var fps = 30;
+	var fps = 60;
 
 //Main drawing function calls itself, runs update, and draws everything it should
 	function draw() {
@@ -427,8 +335,11 @@
 			//Draw the current location's enemy data
 			enemy_draw(game_data.location);
 			//Draw the current location's item data
-			//Draw Lyda along with her stat
 			
+			//Draw black boxes for collision map
+			collision_map_draw(game_data.location);
+			//Draw Lyda along with her stat
+			lyda.draw();
 			//Draw foreground elements
 			foreground_draw(game_data.location)
 			//lyda.draw();
