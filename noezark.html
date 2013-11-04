@@ -1,6 +1,20 @@
 <html>
 <head>
 	<style>
+	body {
+		background-color:gray;
+	}
+	#game {
+		position: absolute;
+		margin: auto;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		width:600px;
+		height:450px;
+		background-color:white;
+	  }
 	</style>
 </head>
 
@@ -79,7 +93,10 @@
 			{x:0, y:418, width:800, height:30},
 			{x:64, y:257, width:192, height:10},
 			{x:64, y:337, width:81, height:10},		
-			{x:176, y:337, width:176, height:10}
+			{x:176, y:337, width:176, height:10},
+			{x:0, y:0, width:10, height:450},
+			{x:590, y:0, width:10, height:450},
+			{x:0, y:0, width:600, height:10}			
 		),
 		//Enemies and locations
 		enemies: new Array(
@@ -88,13 +105,13 @@
 			{type: "Bobcat", x:92, y:310, width:26, height:41}, 
 			{type: "Bobcat", x:93, y:305, width:26, height:41},
 			{type: "Bobcat", x:94, y:310, width:26, height:41}, 
-			{type: "Bobcat", x:95, y:305, width:26, height:41},
-			{type: "Bobcat", x:96, y:310, width:26, height:41}, 
-			{type: "Bobcat", x:97, y:305, width:26, height:41},
-			{type: "Bobcat", x:98, y:310, width:26, height:41}, 
-			{type: "Bobcat", x:99, y:305, width:26, height:41},
-			{type: "Bobcat", x:100, y:310, width:26, height:41}, 
-			{type: "Bobcat", x:80, y:305, width:26, height:41}						
+			// {type: "Bobcat", x:300, y:305, width:26, height:41},
+			// {type: "Bobcat", x:500, y:310, width:26, height:41}, 
+			// {type: "Bobcat", x:550, y:305, width:26, height:41},
+			// {type: "Bobcat", x:100, y:110, width:26, height:41}, 
+			// {type: "Bobcat", x:99, y:205, width:26, height:41},
+			// {type: "Bobcat", x:100, y:310, width:26, height:41}, 
+			{type: "Bobcat", x:80, y:405, width:26, height:41}						
 			
 		),
 		//Doors are entrance and exit points on map
@@ -131,8 +148,8 @@
 		),
 		//Enemies and locations
 		enemies: new Array(
-			{type: "Bobcat", x:450, y:350}, 
-			{type: "Bobcat", x:10, y:10}
+			{type: "Bobcat", x:450, y:350, width:26, height:41}, 
+			{type: "Bobcat", x:10, y:10, width:26, height:41}
 		),
 		//Doors are entrance and exit points on map
 		doors: new Array(
@@ -148,16 +165,15 @@
 	//Main game data as well as viewport information, and general physics of the game
 	//Maybe split this into separate objects
 	var game_data = {
-		current_time: new Date(),
-		jump_max: 40,
 		screen_left: 0,
 		screen_top: 0,
 		x_velocity: 0,
 		y_velocity: 0,
-		x_max: 5,
-		y_max: 10,
-		x_acceleration: 1,
-		y_acceleration: 1.4,
+		x_max: 3,
+		y_max: 6,
+		x_acceleration: 1.2,
+		y_acceleration: 1.2,
+		friction: .8,
 		location: location0
 	};
 	
@@ -184,7 +200,6 @@
 			cxt.fillRect(location.collision_map[i].x, location.collision_map[i].y, location.collision_map[i].width, location.collision_map[i].height);
 		}
 	}
-	
 		
 	//Returns the image data for the enemy type
 	function enemy_image(type) {
@@ -213,8 +228,7 @@
 			location.collision_map[i].y = y + topmost;
 		}
 	}
-	
-	
+		
 	//Main character data and drawing
 	//TODO move any character specific data from other objects into here
 	//Add weapon data
@@ -224,15 +238,20 @@
 		y: 377,
 		//Size of sprite
 		width: 38,
-		height: 42,
+		height: 41,
 		//Animation keyframe
 		keyframe: 0,
 		//x can be left or right, y can be up, down, or forward
 		facing_direction: {x: "left", y: "forward"},
+		//Speed
+		x_velocity: 0,
+		y_velocity: 0,
 		//Jump logic
-		platform: {top:false, bottom:false, left:false, right:false},
-		jump: 0,
-		can_jump: false,
+		initial_jump: .5,
+		grounded: true,
+		jumping: false,
+		jump_height:0,
+		jump_max: 150,
 		//Drawing functions
 		//TODO keyframe animation based on facing_direction x and y
 		draw: function() {
@@ -250,72 +269,182 @@
 	//Collision check code pulled from: http://www.somethinghitme.com/2013/04/16/creating-a-canvas-platformer-tutorial-part-tw/
 	//TODO: Only check for collision between objects that are nearby each other
 	function colCheck(shapeA, shapeB) {
-	    // get the vectors to check against
-	    var vX = (shapeA.x + (shapeA.width / 2)) - (shapeB.x + (shapeB.width / 2)),
-	        vY = (shapeA.y + (shapeA.height / 2)) - (shapeB.y + (shapeB.height / 2)),
-	        // add the half widths and half heights of the objects
-	        hWidths = (shapeA.width / 2) + (shapeB.width / 2),
-	        hHeights = (shapeA.height / 2) + (shapeB.height / 2),
-	        colDir = null;
- 
-	    if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+		// get the vectors to check against
+		var vX = (shapeA.x + (shapeA.width / 2)) - (shapeB.x + (shapeB.width / 2)),
+		vY = (shapeA.y + (shapeA.height / 2)) - (shapeB.y + (shapeB.height / 2)),
+		// add the half widths and half heights of the objects
+		hWidths = (shapeA.width / 2) + (shapeB.width / 2),
+		hHeights = (shapeA.height / 2) + (shapeB.height / 2),
+		colDir = null;
+
+		if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
 			var oX = hWidths - Math.abs(vX),
 				oY = hHeights - Math.abs(vY);
 			if (oX >= oY) {
-	            if (vY > 0) {
-	                colDir = "t";
-	                shapeA.y += oY;
-	            } 
+			    if (vY > 0) {
+			        colDir = "t";
+			        shapeA.y += oY;
+			    } 
 				else {
-	                colDir = "b";
-	                shapeA.y -= oY;
-	            }
-	        } 
-		else {
-            if (vX > 0) {
-                colDir = "l";
-                shapeA.x += oX;
-            } else {
-                colDir = "r";
-                shapeA.x -= oX;
-            }
-	    }
-		console.log(colDir);
-	    return colDir;
+			        colDir = "b";
+			        shapeA.y -= oY;
+			    }
+			} 
+			else {
+				if (vX > 0) {
+				    colDir = "l";
+				    shapeA.x += oX;
+				} else {
+				    colDir = "r";
+				    shapeA.x -= oX;
+				}
+			}
+			// console.log(colDir);
+			return colDir;
+		}
 	}
-}
-
+	
+	function x_velocity_lyda(player) {
+		if (player.x_velocity <= game_data.x_max && player.x_velocity > 0) {
+			player.x_velocity = player.x_velocity * game_data.x_acceleration;		}
+		else if (player.x_velocity >= game_data.x_max * -1 && player.x_velocity < 0) {
+			player.x_velocity = player.x_velocity * game_data.x_acceleration;
+		}
+	}
+	
+	function y_velocity_lyda(player) {
+		//Jumping up
+		if (player.jumping == true && player.jump_height < player.jump_max) {
+			player.y_velocity >= (-1 * game_data.y_max) ? player.y_velocity -= game_data.y_acceleration : player.y_velocity = (-1 *game_data.y_max);
+			player.jump_height += (player.y_velocity * -1);
+			console.log(player.jump_height);
+		}
+		
+		if ((player.jumping == false && player.grounded == false) || (player.jump_height >= player.jump_max)) {
+			player.y_velocity <= 0 ? player.y_velocity = 1 : player.y_velocity = player.y_velocity;
+			player.y_velocity >= (game_data.y_max) ? player.y_velocity += game_data.y_acceleration : player.y_velocity = game_data.y_max;
+			
+		}
+		
+		//Reached max height of jump
+		
+		//Falling down logic
+		
+		//Nothing happening
+	}
+	
 	
 	//TODO Update should do a bunch of stuff based on key combinations, or lack thereof
 	//Call functions to update object data, ie move objects, or destroy them
 	//Additionally, check anything that should be checked each frame
 	function update() {
 		
+		lyda.grounded = false;
+		//Check for Lyda collision on level
 		for (var i = 0; i < game_data.location.collision_map.length; i++) {
-			colCheck(lyda, game_data.location.collision_map[i]);
+			var dir = colCheck(lyda, game_data.location.collision_map[i]);
+			
+			//If left or right, velocity = 0
+			if (dir == "l" || dir == "r") {
+				lyda.x_velocity = 0;
+			}
+			//If bottom then she is grounded and can jump again
+			else if (dir == "b") {
+				lyda.grounded = true;
+				lyda.jumping = false;
+				lyda.jump_height = 0;
+			}
+			//If top reverse velocity
+			else if (dir == "t") {
+				lyda.jump_height = lyda.jump_max;
+			}
 		}
 		
+		//Ground lyda
+		if (lyda.grounded) {
+			lyda.y_velocity = 0;
+	    }
+	
+		//Check collision against any enemies
+		for (var i = 0; i < game_data.location.enemies.length; i++) {
+			var hit = colCheck(lyda, game_data.location.enemies[i]);
+			if (hit != null) {
+				//Do whatever we need to happen on hit here
+			}
+		}
+		
+		//Enemies 
 		for (var i = 0; i < game_data.location.enemies.length; i++) {
 			for (var p = 0; p < game_data.location.collision_map.length; p++) {
 				colCheck(game_data.location.enemies[i], game_data.location.collision_map[p]);
 			}
-			game_data.location.enemies[i].x += 1;
-			game_data.location.enemies[i].y += 1;			
+			if (game_data.location.enemies[i].x - lyda.x > 0 ) {
+				game_data.location.enemies[i].x -= 2;
+			}
+			else {
+				game_data.location.enemies[i].x += 2;
+			}
+
+			game_data.location.enemies[i].y += 1;
 		}
 		//Simple check to switch to a location and make sure everything is working
 		if (keydown.b) {
 			game_data.location = location1;
 		}
+		
+		//Add enemies at random
 		if (keydown.d) {
-			game_data.location.enemies.push({type: "Bobcat", x:80, y:310, width:26, height:41});
+			game_data.location.enemies.push({type: "Bobcat", x:Math.floor(Math.random()*(200+1)), y:Math.floor(Math.random()*(300+1)), width:26, height:41});
+		}
+		
+		//Left
+		if (keydown.left) {
+			lyda.x_velocity >= 0 ? lyda.x_velocity = -1 : lyda.x_velocity = lyda.x_velocity;
+			lyda.facing_direction.x = "left"; 
+		}
+		//Right
+		if (keydown.right) { 
+			lyda.x_velocity <= 0 ? lyda.x_velocity = 1 : lyda.x_velocity = lyda.x_velocity;
+			lyda.facing_direction.x = "right"; 
+		}
+		
+		//Convience for flying around
+		//TODO make these point her weapon arm up or down
+		if (keydown.up) { lyda.y -= 5 }
+		if (keydown.down) { lyda.y += 5 }
+
+		//Jump
+		if (keydown.a) {
+			// up arrow or space
+	        if (!lyda.jumping && lyda.grounded) {
+	            lyda.jumping = true;
+	            lyda.grounded = false;
+	            lyda.y_velocity = -1;
+	        }
+		}
+		
+		if (!keydown.a) {
+			lyda.jumping = false;
+			lyda.y_velocity = 1;
+		}
+		
+		//Not trying to move left or right
+		if (!keydown.left && !keydown.right) {
+			//Apply some friction for slowing down
+			if (lyda.x_velocity != 0) {
+				if (lyda.x_velocity > 0) {lyda.x_velocity = Math.floor(lyda.x_velocity * game_data.friction);}
+				if (lyda.x_velocity < 0) {lyda.x_velocity = Math.ceil(lyda.x_velocity * game_data.friction);}
+			}
 		}
 		
 		
-		if (keydown.left) { lyda.x -= 2 }
-		if (keydown.right) { lyda.x += 2 }		
-		if (keydown.up) { lyda.y -= 2 }
-		if (keydown.down) { lyda.y += 2 }		
+		//Calculate velocities
+		x_velocity_lyda(lyda);
+		y_velocity_lyda(lyda);	
 
+		//Move Lyda based on velocities
+		lyda.x += lyda.x_velocity;
+		lyda.y += lyda.y_velocity;
 	}
 
 //Set frame rate
@@ -348,7 +477,7 @@
 	}
 
 	//Start it all off
-		draw();
+	draw();
 	</script>
 </body>
 
