@@ -97,6 +97,14 @@
 	
 	var test_scene_collison_image = new Image();
 	test_scene_collison_image.src = "assets/Noezark_testscene_collision.png";
+	
+	var weapon_normal_muzzle_image = new Image();
+	weapon_normal_muzzle_image.src = "assets/normal_muzzle.png";
+	
+	var weapon_normal_bullet_image = new Image();
+	weapon_normal_bullet_image.src = "assets/normal_bullet.png";
+	
+
 
 	/* Set Canvas contexts */
 				
@@ -240,6 +248,62 @@
 	};
 	
 	
+	var weapon = {
+		normal: {
+			muzzle: weapon_normal_muzzle_image, 
+			muzzle_rate: 50, 
+			bullet_image: weapon_normal_bullet_image, 
+			max_bullets:8, 
+			bullet_speed: 10, 
+			fire_rate: 250, 
+			bullet_height:10, 
+			bullet_width:10,
+			gun_direction_right: {x:15, y:8},
+			gun_direction_left: {x:0, y:8}
+		},			
+		telecoil: {},
+		beam_torch: {}
+	};
+	
+	
+	
+	// if (lyda.facing_direction.x == "right") {
+	// 	bullets.push({x:lyda.x, y:lyda.y, direction: lyda.facing_direction.x});
+	// }
+	// else if (lyda.facing_direction.x == "left") {
+	// 	bullets.push({x:(lyda.x - lyda.x_velocity), y:(lyda.y + 8), height: 10, width: 10, direction: lyda.facing_direction.x});
+	// }
+	// 
+	// 
+	// bullets.push({x: lyda.x, y: lyda.y, direction: lyda.facing_direction.x});
+	
+	function draw_bullets(bullets) {
+		if (bullets.length > lyda.weapon.bullet_max) {
+			bullets.shift();
+		}
+		for (var i = 0; i < bullets.length; i++) {
+			if (bullets[i].direction == "right") {
+				bullets[i].x += lyda.weapon.bullet_speed;
+			}
+			else if (bullets[i].direction == "left") {
+				bullets[i].x -= lyda.weapon.bullet_speed;
+			}
+			cxt.drawImage(lyda.weapon.bullet_image, bullets[i].x, bullets[i].y, lyda.weapon.bullet_height, lyda.weapon.bullet_width);
+		}
+		
+		var now_time = new Date();
+		
+		//TODO Pull out muzzle information and put it in weapon object
+		if (now_time - game_data.last_bullet < lyda.weapon.muzzle_rate && lyda.facing_direction.x == "right") {
+			cxt.drawImage(lyda.weapon.muzzle, 0, 0, 29, 15, lyda.x + lyda.width - 5, lyda.y + 4, 29, 15);
+		}
+		else if (now_time - game_data.last_bullet < lyda.weapon.muzzle_rate && lyda.facing_direction.x == "left") {
+			cxt.drawImage(lyda.weapon.muzzle, 0, 15, 29, 15, lyda.x - lyda.width + 16, lyda.y + 4, 29, 15);
+		}
+	}
+	
+	
+	
 	//Loops through all background images and draws them one on top of each other
 	function background_draw(location) {
 		var background_array = location.background.length;
@@ -314,21 +378,30 @@
 		height: 41,
 		//Animation keyframe
 		keyframe: 0,
+		//placeholder for recording her x movement
 		animation_x_movement: 0,
+		//At what x movement does the frame advance
 		animation_frame_advance: 8,
 		//x can be left or right, y can be up, down, or forward
-		facing_direction: {x: "left", y: "up"},
-		//Speed
+		facing_direction: {x: "left", y: "forward"},
+		//Speed at any one time
 		x_velocity: 0,
 		y_velocity: 0,
 		//Jump logic
+		//Propel her up
 		initial_jump: .5,
+		//Is she on the ground?
 		grounded: true,
+		//Is she currently jumping?
 		jumping: false,
+		//Placeholder for amount she's jumped
 		jump_height:0,
+		//Max height she can jump
 		jump_max: 150,
+		//Weapon
+		weapon: weapon.normal,
 		//Drawing functions
-		//TODO keyframe animation based on facing_direction x and y
+		//TODO Split top and bottom of sprite one for x and one for y
 		draw: function() {
 			if (this.facing_direction.x == "right") {
 				var crop_left = this.keyframe * this.width;
@@ -479,9 +552,11 @@
 					}
 				}
 				
+				//Remove Bullets
+				bullets = [];
 				//Set player x and y to starting point for that door
 				player.x = game_data.location.doors[correct_door].player_start.x;
-				player.y = game_data.location.doors[correct_door].player_start.y;				
+				player.y = game_data.location.doors[correct_door].player_start.y;
 			}
 		}
 	}
@@ -517,20 +592,6 @@
 	
 	var bullets = new Array;
 	
-	function draw_bullets(bullets) {
-		for (var i = 0; i < bullets.length; i++) {
-			cxt.fillStyle="#FF0000";
-
-			if (bullets[i].direction == "right") {
-				bullets[i].x += 10;				
-			}
-			else if (bullets[i].direction == "left") {
-				bullets[i].x -=10;
-			}
-			cxt.fillRect(bullets[i].x, bullets[i].y, bullets[i].height, bullets[i].width);
-		}
-		
-	}
 	
 	
 	//TODO Update should do a bunch of stuff based on key combinations, or lack thereof
@@ -542,6 +603,7 @@
 		check_door(lyda);
 		
 		lyda.grounded = false;
+		
 		//Check for Lyda collision on level
 		for (var i = 0; i < game_data.location.collision_map.length; i++) {
 			var dir = colCheck(lyda, game_data.location.collision_map[i]);
@@ -608,10 +670,6 @@
 
 			game_data.location.enemies[i].y += 1;
 		}
-		//Simple check to switch to a location and make sure everything is working
-		if (keydown.b) {
-			game_data.location = location1;
-		}
 		
 		//Add enemies at random
 		if (keydown.d) {
@@ -619,18 +677,24 @@
 		}
 		
 		//TODO Pull out bullet logic and assign it to weapons
-		if (keydown.s) {
-			if (Math.abs(game_data.last_bullet - current_time) > 300) {
-				game_data.last_bullet = new Date();			
-				if (lyda.facing_direction.x == "right") {
-					bullets.push({x:(lyda.x + lyda.width + lyda.x_velocity), y:(lyda.y + 6), height: 10, width: 10, direction: lyda.facing_direction.x}); 
-				}
-				else if (lyda.facing_direction.x == "left") {
-					bullets.push({x:(lyda.x - lyda.x_velocity), y:(lyda.y + 6), height: 10, width: 10, direction: lyda.facing_direction.x});
-				}
+		if (keydown.s && Math.abs(game_data.last_bullet - current_time) > lyda.weapon.fire_rate) {
+			game_data.last_bullet = new Date();
+			if (lyda.facing_direction.x == "right") {
+				bullets.push({x: (lyda.x + lyda.weapon.gun_direction_right.x), 
+					y: (lyda.y + lyda.weapon.gun_direction_right.y), 
+					height:lyda.weapon.bullet_height, 
+					width:lyda.weapon.bullet_width, 
+					direction: lyda.facing_direction.x
+				});
 			}
-			if (bullets.length > 5) {
-				bullets.shift();
+			else if (lyda.facing_direction.x == "left") {
+				bullets.push({x: (lyda.x + lyda.weapon.gun_direction_left.x), 
+					y: (lyda.y + lyda.weapon.gun_direction_left.y), 
+					height:lyda.weapon.bullet_height, 
+					width:lyda.weapon.bullet_width, 
+					direction: lyda.facing_direction.x
+				});
+				
 			}
 		}
 		
@@ -709,7 +773,7 @@
 			collision_map_draw(game_data.location);
 			//Draw Lyda along with her stat
 			lyda.draw();
-			//Bullets
+			//Weapon and bullets
 			draw_bullets(bullets);
 			//Draw Doors
 			draw_doors(game_data.location);
