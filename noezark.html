@@ -103,20 +103,15 @@
 	
 	var weapon_normal_bullet_image = new Image();
 	weapon_normal_bullet_image.src = "assets/normal_bullet.png";
-	
-
 
 	/* Set Canvas contexts */
 				
 	var canvas = document.getElementById("main")		
 	var cxt = canvas.getContext("2d");
 
-	var canvas_width = canvas.width;
-    var canvas_height = canvas.height;
 	
-
-	
-	//Figure out order of object declaration
+	//TODO Lock down order of object declaration
+	//TODO Pull out locations into separate files and bring in as needed
 	
 	var location0 = {
 		//Begin information specific to the location if any
@@ -228,9 +223,8 @@
 		)
 	}
 	
-	
+	//TODO bring in all game level data into this object
 	//Main game data as well as viewport information, and general physics of the game
-	//Maybe split this into separate objects
 	var game_data = {
 		fps: 60,
 		current_frame: 0,
@@ -247,48 +241,108 @@
 		location: location1
 	};
 	
-	
+	//Holds all weapon specific data
 	var weapon = {
 		normal: {
+			//Image for muzzle flash
 			muzzle: weapon_normal_muzzle_image, 
+			//How long the muzzle stays lit before going away
 			muzzle_rate: 50, 
+			//Image to use for bullet
 			bullet_image: weapon_normal_bullet_image, 
+			//Max number of bullets on screen
 			max_bullets:8, 
-			bullet_speed: 10, 
-			fire_rate: 250, 
+			//How fast it travels each frame
+			bullet_speed_x: 15, 
+			//How long before you can fire again
+			fire_rate: 200, 
+			//Size of bullet box
 			bullet_height:10, 
 			bullet_width:10,
+			//Offset to line up gun
 			gun_direction_right: {x:15, y:8},
 			gun_direction_left: {x:0, y:8}
 		},			
 		telecoil: {},
-		beam_torch: {}
+		beam_torch: {
+			muzzle: weapon_normal_muzzle_image, 
+			muzzle_rate: 50, 
+			bullet_image: weapon_normal_bullet_image, 
+			max_bullets:1, 
+			bullet_speed_x: function() { return lyda.x_velocity },
+			bullet_speed_y: function() { if (lyda.grounded == true) {return lyda.y_velocity - 1;} else {return lyda.y_velocity;} },
+			fire_rate: 0, 
+			bullet_height:10, 
+			bullet_width:50,
+			gun_direction_right: {x:33, y:8},
+			gun_direction_left: {x:-45, y:8}
+		}
 	};
+
+	//Main character data and drawing
+	//TODO move any character specific data from other objects into here
+	var lyda = {
+		//Initial starting position will be determined by level and direction entered
+		x: 400,
+		y: 200,
+		//Size of sprite
+		width: 38,
+		height: 41,
+		//Animation keyframe
+		keyframe: 0,
+		//placeholder for recording her x movement
+		animation_x_movement: 0,
+		//At what x movement does the frame advance
+		animation_frame_advance: 8,
+		//x can be left or right, y can be up, down, or forward
+		facing_direction: {x: "left", y: "forward"},
+		//Speed at any one time
+		x_velocity: 0,
+		y_velocity: 0,
+		//Jump logic
+			//Propel her up
+			initial_jump: .5,
+			//Is she on the ground?
+			grounded: true,
+			//Is she currently jumping?
+			jumping: false,
+			//Placeholder for amount she's jumped
+			jump_height:0,
+			//Max height she can jump
+			jump_max: 150,
+		//Weapon
+		weapon: weapon.normal,
+		//Drawing functions
+		//TODO Split top and bottom of sprite one for x and one for y
+		draw: function() {
+			if (this.facing_direction.x == "right") {
+				var crop_left = this.keyframe * this.width;
+				cxt.drawImage(lyda_image, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+			}
+			else if (this.facing_direction.x == "left") {
+				var crop_left = this.keyframe * this.width;
+				cxt.drawImage(lyda_image_left, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+			}
+		}
+	}
 	
+	//placeholder for bullets
+	var bullets = new Array;
 	
-	
-	// if (lyda.facing_direction.x == "right") {
-	// 	bullets.push({x:lyda.x, y:lyda.y, direction: lyda.facing_direction.x});
-	// }
-	// else if (lyda.facing_direction.x == "left") {
-	// 	bullets.push({x:(lyda.x - lyda.x_velocity), y:(lyda.y + 8), height: 10, width: 10, direction: lyda.facing_direction.x});
-	// }
-	// 
-	// 
-	// bullets.push({x: lyda.x, y: lyda.y, direction: lyda.facing_direction.x});
-	
+	//TODO Each gun will need a separate function to handle all the logic
 	function draw_bullets(bullets) {
-		if (bullets.length > lyda.weapon.bullet_max) {
+		if (bullets.length > lyda.weapon.max_bullets) {
 			bullets.shift();
 		}
 		for (var i = 0; i < bullets.length; i++) {
 			if (bullets[i].direction == "right") {
-				bullets[i].x += lyda.weapon.bullet_speed;
+				bullets[i].x += lyda.weapon.bullet_speed_x;
+
 			}
 			else if (bullets[i].direction == "left") {
-				bullets[i].x -= lyda.weapon.bullet_speed;
+				bullets[i].x -= lyda.weapon.bullet_speed_x;
 			}
-			cxt.drawImage(lyda.weapon.bullet_image, bullets[i].x, bullets[i].y, lyda.weapon.bullet_height, lyda.weapon.bullet_width);
+			cxt.drawImage(lyda.weapon.bullet_image, bullets[i].x, bullets[i].y, lyda.weapon.bullet_width, lyda.weapon.bullet_height);
 		}
 		
 		var now_time = new Date();
@@ -366,53 +420,6 @@
 		}
 	}
 		
-	//Main character data and drawing
-	//TODO move any character specific data from other objects into here
-	//Add weapon data
-	var lyda = {
-		//Initial starting position will be determined by level and direction entered
-		x: 400,
-		y: 200,
-		//Size of sprite
-		width: 38,
-		height: 41,
-		//Animation keyframe
-		keyframe: 0,
-		//placeholder for recording her x movement
-		animation_x_movement: 0,
-		//At what x movement does the frame advance
-		animation_frame_advance: 8,
-		//x can be left or right, y can be up, down, or forward
-		facing_direction: {x: "left", y: "forward"},
-		//Speed at any one time
-		x_velocity: 0,
-		y_velocity: 0,
-		//Jump logic
-		//Propel her up
-		initial_jump: .5,
-		//Is she on the ground?
-		grounded: true,
-		//Is she currently jumping?
-		jumping: false,
-		//Placeholder for amount she's jumped
-		jump_height:0,
-		//Max height she can jump
-		jump_max: 150,
-		//Weapon
-		weapon: weapon.normal,
-		//Drawing functions
-		//TODO Split top and bottom of sprite one for x and one for y
-		draw: function() {
-			if (this.facing_direction.x == "right") {
-				var crop_left = this.keyframe * this.width;
-				cxt.drawImage(lyda_image, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
-			}
-			else if (this.facing_direction.x == "left") {
-				var crop_left = this.keyframe * this.width;
-				cxt.drawImage(lyda_image_left, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
-			}
-		}
-	}
 	
 	//Collision check code pulled from: http://www.somethinghitme.com/2013/04/16/creating-a-canvas-platformer-tutorial-part-tw/
 	//TODO: Only check for collision between objects that are nearby each other
@@ -560,39 +567,36 @@
 			}
 		}
 	}
-	
-	function viewport(location) {
-		if (background.leftmostcanvas_width >= background.width && lyda.x_direction == "right") {
-		     lyda.x < canvas.width - 50 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
-		        lyda.y += game_data.y_velocity;
-		   }
-		   //Viewport at left edge of level
-		   else if (background.leftmost <= 1 && lyda.x_direction == "left") {
-		     lyda.x > 1 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
-		     lyda.y += game_data.y_velocity;
-		   }
-		   //Viewport move left
-		   else if (lyda.x < 250 && background.leftmost > 1 && lyda.x_direction == "left") {
-		     background.leftmost += game_data.x_velocity;
-		     lyda.y += game_data.y_velocity;      
-        
-		      }
-		   //Viewport move right
-		   else if (lyda.x > 350 && background.leftmostcanvas_width < background.width && lyda.x_direction == "right") {
-		     background.leftmost += game_data.x_velocity;
-		     lyda.y += game_data.y_velocity;
-		   }    
-   
-		   //Viewport doesn't move, lyda does
-		   else {
-		     lyda.x += game_data.x_velocity;
-		     lyda.y += game_data.y_velocity;      
-		   }
-	}
-	
-	var bullets = new Array;
-	
-	
+
+	//From Older Version
+	// function viewport(location) {
+	// 	if (background.leftmostcanvas_width >= background.width && lyda.x_direction == "right") {
+	// 	     lyda.x < canvas.width - 50 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
+	// 	        lyda.y += game_data.y_velocity;
+	// 	   }
+	// 	   //Viewport at left edge of level
+	// 	   else if (background.leftmost <= 1 && lyda.x_direction == "left") {
+	// 	     lyda.x > 1 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
+	// 	     lyda.y += game_data.y_velocity;
+	// 	   }
+	// 	   //Viewport move left
+	// 	   else if (lyda.x < 250 && background.leftmost > 1 && lyda.x_direction == "left") {
+	// 	     background.leftmost += game_data.x_velocity;
+	// 	     lyda.y += game_data.y_velocity;      
+	//         
+	// 	      }
+	// 	   //Viewport move right
+	// 	   else if (lyda.x > 350 && background.leftmostcanvas_width < background.width && lyda.x_direction == "right") {
+	// 	     background.leftmost += game_data.x_velocity;
+	// 	     lyda.y += game_data.y_velocity;
+	// 	   }    
+	//    
+	// 	   //Viewport doesn't move, lyda does
+	// 	   else {
+	// 	     lyda.x += game_data.x_velocity;
+	// 	     lyda.y += game_data.y_velocity;      
+	// 	   }
+	// }
 	
 	//TODO Update should do a bunch of stuff based on key combinations, or lack thereof
 	//Call functions to update object data, ie move objects, or destroy them
@@ -676,7 +680,7 @@
 			game_data.location.enemies.push({type: "Bobcat", x:Math.floor(Math.random()*(200+1)), y:Math.floor(Math.random()*(300+1)), width:26, height:41, health:10});
 		}
 		
-		//TODO Pull out bullet logic and assign it to weapons
+		//Firing weapon pushes bullet into bullet array
 		if (keydown.s && Math.abs(game_data.last_bullet - current_time) > lyda.weapon.fire_rate) {
 			game_data.last_bullet = new Date();
 			if (lyda.facing_direction.x == "right") {
@@ -735,6 +739,10 @@
 				if (lyda.x_velocity > 0) {lyda.x_velocity = Math.floor(lyda.x_velocity * game_data.friction);}
 				if (lyda.x_velocity < 0) {lyda.x_velocity = Math.ceil(lyda.x_velocity * game_data.friction);}
 			}
+		}
+		
+		if (keydown.w) {
+			lyda.weapon = weapon.beam_torch;
 		}
 		
 		//Calculate velocities
