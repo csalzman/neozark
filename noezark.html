@@ -45,65 +45,16 @@
 	<script type="text/javascript" src="javascript/jquery-1.10.2.min.js"></script>
 	<script type="text/javascript" src="javascript/jqueryhotkeys.js"></script>
 	<script type="text/javascript" src="javascript/key_status.js"></script>
-	<script type="text/javascript" src="level1.js"></script>
-	<script type="text/javascript" src="level2.js"></script>	
+
+	<!-- Load Game Assets -->
+	<script type="text/javascript" src="asset_loader.js"></script>
+
+	<!-- Load Locations -->
+	<script type="text/javascript" src="location_loader.js"></script>
+
+	<!-- Main Game Script -->
 	<script type="text/javascript">
 	
-	//Load Game Assets
-
-	var collision_image = new Image();
-	collision_image.src = "assets/Noezark_testscene_collision.png";
-	
-	var background_image = new Image();
-	background_image.src = "assets/Noezark_testscene1.png";
-	
-	var lyda_image = new Image();
-	lyda_image.src = "assets/lyda.png";
-	
-	var lyda_image_left = new Image();
-	lyda_image_left.src = "assets/lyda-left.png";
-	
-	var bobcat_image = new Image();
-	bobcat_image.src = "assets/bobcat_walk1_1.png";
-	
-	var background_mall_ground_image = new Image();
-	background_mall_ground_image = "assets/background_mall_ground_Collison.png";
-
-	var background_mall_ground_image = new Image();
-	background_mall_ground_image.src = "assets/background_mall_ground_Collison.png";
-	
-	var background_mall_grass_image = new Image();
-	background_mall_grass_image.src = "assets/background_mall_Grass.png";
-	
-	var background_mall_collison_image = new Image();
-	background_mall_collison_image.src = "assets/background_mall_ground_Collison.png";
-	
-	var background_mall_platforms = new Image();
-	background_mall_platforms.src = "assets/background_mall_platforms_collision.png";
-
-	var metro_background_image = new Image();
-	metro_background_image.src = "assets/metro_background.png";
-
-	var metro_collison_image = new Image();
-	metro_collison_image.src = "assets/metro_Collison.png";
-
-	var metro_foreground_image = new Image();
-	metro_foreground_image.src = "assets/metro_foreground.png";
-
-
-	var test_scene_background_image = new Image();
-	test_scene_background_image.src = "assets/Noezark_testscene1.png";
-	
-	
-	var test_scene_collison_image = new Image();
-	test_scene_collison_image.src = "assets/Noezark_testscene_collision.png";
-	
-	var weapon_normal_muzzle_image = new Image();
-	weapon_normal_muzzle_image.src = "assets/normal_muzzle.png";
-	
-	var weapon_normal_bullet_image = new Image();
-	weapon_normal_bullet_image.src = "assets/normal_bullet.png";
-
 	/* Set Canvas contexts */
 				
 	var canvas = document.getElementById("main")		
@@ -111,120 +62,12 @@
 
 	
 	//TODO Lock down order of object declaration
-	//TODO Pull out locations into separate files and bring in as needed
-	
-	var location0 = {
-		//Begin information specific to the location if any
-		
-		//End location specific information
-		//Begin information needed for all locations
-		//List all elements, will be drawn in sequence
-		name: "Grassy plain",
-		background: new Array(
-			background_mall_grass_image,
-			background_mall_ground_image, 
-			background_mall_collison_image
-		),
-		foreground: new Array(),
-		//Walls and platforms
-		collision_map: new Array(
-			{x:0, y:418, width:800, height:30},
-			{x:64, y:257, width:180, height:10},
-			{x:64, y:337, width:60, height:10},		
-			{x:176, y:337, width:176, height:10},
-			{x:0, y:0, width:10, height:450},
-			{x:590, y:0, width:10, height:450},
-			{x:0, y:0, width:600, height:10}			
-		),
-		//Enemies and locations
-		enemies: new Array(
-			{type: "Bobcat", x:80, y:310, width:26, height:41, health: 10}, 
-			{type: "Bobcat", x:80, y:405, width:26, height:41, health: 10}			
-		),
-		//Doors are entrance and exit points on map
-		doors: new Array(
-			{type:"normal", name: "east", x:580, y:320, height:100, width:10, locked: false, player_start: {x:540, y:320}, link: {location: "location1", door: "west"}}
-		),
-		//Items
-		item: new Array(
-			{type:"Terrajump", x: 0, y:0}
-		)
-	}
-	
-	var location1 = {
-		//Begin information specific to the location if any
-		
-		//End location specific information
-		//Begin information needed for all locations
-		//List all elements, will be drawn in sequence
-		name: "Subway",
-		background: new Array(
-			metro_background_image,
-			metro_collison_image
-		),
-		foreground: new Array(
-			metro_foreground_image
-		),
-		//Walls and platforms
-		collision_map: new Array(
-			{x:0, y:0, width:800, height:174},
-			{x:0, y:420, width:800, height:174},
-			{x:290, y:320, width:256, height:10},		
-			{x:608, y:320, width:112, height:10}
-		),
-		//Enemies and locations
-		enemies: new Array(
-			{type: "Bobcat", x:450, y:350, width:26, height:41, health: 10}, 
-			{type: "Bobcat", x:10, y:10, width:26, height:41, health: 10}
-		),
-		//Doors are entrance and exit points on map
-		doors: new Array(
-			{type:"normal", name: "west", x:0, y:320, height:100, width:10, locked: false, player_start: {x:20, y:320}, link: {location: "location0", door: "east"}},
-			{type:"normal", name: "east", x:580, y:250, height:100, width:10, locked: false, player_start: {x:530, y:320}, link: {location: "location2", door: "west"}}			
-		),
-		//Items
-		item: new Array(
-			{type:"Terrajump", x: 0, y:0}
-		)
-	}
-	
-	var location2 = {
-		//Begin information specific to the location if any
-		
-		//End location specific information
-		//Begin information needed for all locations
-		//List all elements, will be drawn in sequence
-		name: "Test Area",
-		background: new Array(
-			test_scene_background_image,
-			test_scene_collison_image
-		),
-		foreground: new Array(
-
-		),
-		//Walls and platforms
-		collision_map: new Array(
-			{x:0, y:0, width:800, height:10},
-			{x:0, y:390, width:800, height:174},
-			{x:20, y:260, width:64, height:14},		
-			{x:182, y:328, width:80, height:14},
-			{x:20, y:170, width:112, height:14}			
-		),
-		//Enemies and locations
-		enemies: new Array(
-		),
-		//Doors are entrance and exit points on map
-		doors: new Array(
-			{type:"normal", name: "west", x:0, y:285, height:100, width:20, locked: false, player_start: {x:20, y:350}, link: {location: "location1", door: "east"}}
-		),
-		//Items
-		item: new Array(
-			{type:"Terrajump", x: 0, y:0}
-		)
-	}
-	
 	//TODO bring in all game level data into this object
-	//Main game data as well as viewport information, and general physics of the game
+
+	//***********************
+	//Main game data
+	//***********************
+	
 	var game_data = {
 		fps: 60,
 		current_frame: 0,
@@ -236,13 +79,16 @@
 		y_max: 8,
 		x_acceleration: 1.2,
 		y_acceleration: 1.2,
-		friction: .6,
-		last_bullet: new Date(),
+		friction: .8,
 		location: location1
 	};
 	
-	//Holds all weapon specific data
+	//***********************	
+	//Weapon data and functions
+	//***********************
+		
 	var weapon = {
+		name: "normal",
 		normal: {
 			//Image for muzzle flash
 			muzzle: weapon_normal_muzzle_image, 
@@ -265,6 +111,7 @@
 		},			
 		telecoil: {},
 		beam_torch: {
+			name: "beam_torch",
 			muzzle: weapon_normal_muzzle_image, 
 			muzzle_rate: 50, 
 			bullet_image: weapon_normal_bullet_image, 
@@ -278,9 +125,51 @@
 			gun_direction_left: {x:-45, y:8}
 		}
 	};
+	
+	//placeholder for bullets
+	var bullets = new Array;
+	
+	//TODO Main function should determine what (if any) funciton to call when fire button is pressed
+	//TODO Each weapon type will have a separate function to handle logic of what to do when fire button is pressed/unpressed
+	//Normal Weapon
+	function draw_bullets(bullets) {
+		if (bullets.length > lyda.weapon.max_bullets) {
+			bullets.shift();
+		}
+		for (var i = 0; i < bullets.length; i++) {
+			if (bullets[i].direction == "right") {
+				bullets[i].x += lyda.weapon.bullet_speed_x;
 
+			}
+			else if (bullets[i].direction == "left") {
+				bullets[i].x -= lyda.weapon.bullet_speed_x;
+			}
+			cxt.drawImage(lyda.weapon.bullet_image, bullets[i].x, bullets[i].y, lyda.weapon.bullet_width, lyda.weapon.bullet_height);
+		}
+		
+		var now_time = new Date();
+		
+		//TODO Pull out muzzle information and put it in weapon object
+		if (now_time - game_data.last_bullet < lyda.weapon.muzzle_rate && lyda.facing_direction.x == "right") {
+			cxt.drawImage(lyda.weapon.muzzle, 0, 0, 29, 15, lyda.x + lyda.width - 5, lyda.y + 4, 29, 15);
+		}
+		else if (now_time - game_data.last_bullet < lyda.weapon.muzzle_rate && lyda.facing_direction.x == "left") {
+			cxt.drawImage(lyda.weapon.muzzle, 0, 15, 29, 15, lyda.x - lyda.width + 16, lyda.y + 4, 29, 15);
+		}
+	}
+	
+	//TODO this fires whenever a new room is entered, or perhaps at other game breaking events.
+	function remove_bullets() {
+		if (lyda.weapon.name == "normal") {
+			bullets = [];
+		}
+	}
+
+	//***********************	
 	//Main character data and drawing
-	//TODO move any character specific data from other objects into here
+	//***********************
+		
+	//Lyda contains anything specific to her character
 	var lyda = {
 		//Initial starting position will be determined by level and direction entered
 		x: 400,
@@ -312,10 +201,14 @@
 			jump_max: 150,
 		//Weapon
 		weapon: weapon.normal,
+		last_bullet: new Date(),
 		//Drawing functions
-		//TODO Split top and bottom of sprite one for x and one for y
+		//TODO Split top and bottom of sprite one to handle legs and upper body separately
+		//TODO Draw image from a sprite sheet based on direction pointing
 		draw: function() {
 			if (this.facing_direction.x == "right") {
+				//Crop left determines where to crop the sprite sheet
+				//Add in a y value as well and stack directions on top of each other
 				var crop_left = this.keyframe * this.width;
 				cxt.drawImage(lyda_image, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
 			}
@@ -326,45 +219,56 @@
 		}
 	}
 	
-	//placeholder for bullets
-	var bullets = new Array;
-	
-	//TODO Each gun will need a separate function to handle all the logic
-	function draw_bullets(bullets) {
-		if (bullets.length > lyda.weapon.max_bullets) {
-			bullets.shift();
-		}
-		for (var i = 0; i < bullets.length; i++) {
-			if (bullets[i].direction == "right") {
-				bullets[i].x += lyda.weapon.bullet_speed_x;
+	//Finds animation frame to display
+	//TODO: make this a generic check for anything that animates
+	function animation_frame_lyda(player) {
+		
+		//TODO: This should be based on whatever check makes sense for the Sprite
+		//For example, lyda's is based on movement, unmoving background elements might be based on time
+		
+		player.animation_x_movement += player.x_velocity;
 
-			}
-			else if (bullets[i].direction == "left") {
-				bullets[i].x -= lyda.weapon.bullet_speed_x;
-			}
-			cxt.drawImage(lyda.weapon.bullet_image, bullets[i].x, bullets[i].y, lyda.weapon.bullet_width, lyda.weapon.bullet_height);
+		if (player.facing_direction.x == "right" && player.animation_x_movement >= player.animation_frame_advance && player.jumping != true) {
+			player.keyframe <= 0 ? player.keyframe = 9 : player.keyframe -= 1;
+
+			lyda.animation_x_movement = 0;
+		}
+		else if (player.facing_direction.x == "left" && player.animation_x_movement <= (-1 * player.animation_frame_advance) && player.jumping != true) {
+			player.keyframe <= 0 ? player.keyframe = 9 : player.keyframe -= 1;
+			lyda.animation_x_movement = 0;			
 		}
 		
-		var now_time = new Date();
-		
-		//TODO Pull out muzzle information and put it in weapon object
-		if (now_time - game_data.last_bullet < lyda.weapon.muzzle_rate && lyda.facing_direction.x == "right") {
-			cxt.drawImage(lyda.weapon.muzzle, 0, 0, 29, 15, lyda.x + lyda.width - 5, lyda.y + 4, 29, 15);
+		if (player.jumping == true) {
+			player.keyframe = 0;
 		}
-		else if (now_time - game_data.last_bullet < lyda.weapon.muzzle_rate && lyda.facing_direction.x == "left") {
-			cxt.drawImage(lyda.weapon.muzzle, 0, 15, 29, 15, lyda.x - lyda.width + 16, lyda.y + 4, 29, 15);
+		if (player.x_velocity == 0) {
+			player.keyframe = 0;
+		}
+		
+		//Up or Down
+		if (player.facing_direction.y == "up") {
+			
+		}
+		else if(player.facing_direction.y == "down") {
+			
 		}
 	}
 	
-	
-	
-	//Loops through all background images and draws them one on top of each other
+
+	//***********************	
+	//Location Drawing Functions
+	//***********************
+		
+	//Handles each of the location drawing tasks in order they stack
 	function background_draw(location) {
 		var background_array = location.background.length;
 		for (var i = 0; i < background_array; i++ ) {
 			cxt.drawImage(location.background[i], game_data.screen_left, game_data.screen_top);
 		}
 	}
+	
+	//NOTE: Enemy Draw happens here in game loop
+	//NOTE: Lyda Draw happens here in game loop
 	
 	function foreground_draw(location) {
 		var foreground_array = location.foreground.length;
@@ -373,6 +277,7 @@
 		}
 	}
 
+	//Collision map will be drawn transparently later on
 	function collision_map_draw(location) {
 		var collision_map_array = location.collision_map.length;
 		for (var i = 0; i < collision_map_array; i++ ) {
@@ -383,22 +288,29 @@
 		}
 	}
 	
+	//Doors go over everything
 	function draw_doors(location) {
 		var doors_array = location.doors.length;
 		for (var i = 0; i < doors_array; i++ ) {
 			location.doors[i].locked == true ? cxt.fillStyle="#838B8B" : cxt.fillStyle="#66CCCC";
 			cxt.fillRect(location.doors[i].x, location.doors[i].y, location.doors[i].width, location.doors[i].height);
 		}
-		
-	}
-		
+	}	
+	
+	
+	//***********************
+	//Enemy functions
+	//***********************	
+
 	//Returns the image data for the enemy type
 	function enemy_image(type) {
-		if (type == "Bobcat") {
+		switch (type) { 
+		case "Bobcat":
 			return bobcat_image;
-		}
-		else {
-			console.log("No image for that enemy");
+			break;
+		case "Big_Bobcat":
+			return big_bobcat_image;
+			break;
 		}
 	}
 	
@@ -411,18 +323,22 @@
 		}
 	}
 	
-	//Defines the collision_map, keeps it consistent to the map based on where the viewport is
-	function collision_map_update(location) {
-		var collision_map = location.collision_map.length;
-		for (var i = 0; i < collision_map; i++ ) {
-			location.collision_map[i].x = x + leftmost;
-			location.collision_map[i].y = y + topmost;
-		}
-	}
-		
+	//***********************	
+	//Viewport logic
+	//***********************	
+	
+	//TODO: implement basic viewport logic
+	//TODO: tie all x, y coordinate data to the speed and location of viewport
+
+	
+	//***********************	
+	//Collision Checks
+	//***********************
+	
+	//TODO: pull out any collision logic in the update loop into separate collision functions
 	
 	//Collision check code pulled from: http://www.somethinghitme.com/2013/04/16/creating-a-canvas-platformer-tutorial-part-tw/
-	//TODO: Only check for collision between objects that are nearby each other
+	//TODO: only check for collision between objects that are nearby each other to cut down on processing
 	function colCheck(shapeA, shapeB) {
 		// get the vectors to check against
 		var vX = (shapeA.x + (shapeA.width / 2)) - (shapeB.x + (shapeB.width / 2)),
@@ -459,6 +375,44 @@
 		}
 	}
 	
+	//Check if Lyda is colliding with a door
+	//TODO Logic for door types
+	function check_door(player) {
+		for (var i = 0; i < game_data.location.doors.length; i++) {
+			var hit = colCheck(player, game_data.location.doors[i]);
+			if (hit != null && game_data.location.doors[i].locked == false) {
+				//Grab name of the door you entered is linked to
+				var linked_door = game_data.location.doors[i].link.door;
+				
+				//switch to new location
+				game_data.location = eval(game_data.location.doors[i].link.location);
+				console.log(game_data.location);
+				//Find door in new location
+				//Placeholder for the correct door in the array
+				var correct_door = "";
+				//Loop through new location looking for which door you're entering in
+				for (var p = 0; p < game_data.location.doors.length; p++) {
+					if (game_data.location.doors[p].name == linked_door) {
+						correct_door = p;
+					}
+				}
+				
+				//Clean up bullets
+				remove_bullets();
+				
+				//Set player x and y to starting point for that door
+				player.x = game_data.location.doors[correct_door].player_start.x;
+				player.y = game_data.location.doors[correct_door].player_start.y;
+			}
+		}
+	}
+
+	
+	//***********************
+	//Velocity Checks
+	//***********************
+	
+	//Lyda x check		
 	function x_velocity_lyda(player) {
 		if (player.x_velocity <= game_data.x_max && player.x_velocity > 0) {
 			player.x_velocity = player.x_velocity * game_data.x_acceleration;		}
@@ -471,10 +425,12 @@
 		}
 		if (player.x_velocity > game_data.x_max) {
 			player.x_velocity = game_data.x_max;
-		}
-		
+		}	
 	}
 	
+	//Lyda y check
+	//TODO Smooth out jumping to follow a believable curve
+	//TODO Better logic when colliding with a ceiling
 	function y_velocity_lyda(player) {
 		//Jumping up
 		if (player.jumping == true && player.jump_height <= player.jump_max) {
@@ -505,99 +461,15 @@
 		if (player.y_velocity > game_data.y_max) {
 			player.y_velocity = game_data.y_max;
 		}
-		
 	}
 	
-	function animation_frame_lyda(player) {
-		//Right or left
-		// console.log(player.animation_x_movement);
-		player.animation_x_movement += player.x_velocity;
 
-		if (player.facing_direction.x == "right" && player.animation_x_movement >= player.animation_frame_advance && player.jumping != true) {
-			player.keyframe <= 0 ? player.keyframe = 9 : player.keyframe -= 1;
-
-			lyda.animation_x_movement = 0;
-		}
-		else if (player.facing_direction.x == "left" && player.animation_x_movement <= (-1 * player.animation_frame_advance) && player.jumping != true) {
-			player.keyframe <= 0 ? player.keyframe = 9 : player.keyframe -= 1;
-			lyda.animation_x_movement = 0;			
-		}
+	//****************
+	//****************
+	// Update Loop
+	//****************
+	//****************
 		
-		if (player.jumping == true) {
-			player.keyframe = 0;
-		}
-		if (player.x_velocity == 0) {
-			player.keyframe = 0;
-		}
-		
-		//Up or Down
-		if (player.facing_direction.y == "up") {
-			
-		}
-		else if(player.facing_direction.y == "down") {
-			
-		}
-	}
-	
-	function check_door(player) {
-		for (var i = 0; i < game_data.location.doors.length; i++) {
-			var hit = colCheck(player, game_data.location.doors[i]);
-			if (hit != null && game_data.location.doors[i].locked == false) {
-				//Grab name of the door you entered is linked to
-				var linked_door = game_data.location.doors[i].link.door;
-				
-				//switch to new location
-				game_data.location = eval(game_data.location.doors[i].link.location);
-				console.log(game_data.location);
-				//Find door in new location
-				//Placeholder for the correct door in the array
-				var correct_door = "";
-				//Loop through new location looking for which door you're entering in
-				for (var p = 0; p < game_data.location.doors.length; p++) {
-					if (game_data.location.doors[p].name == linked_door) {
-						correct_door = p;
-					}
-				}
-				
-				//Remove Bullets
-				bullets = [];
-				//Set player x and y to starting point for that door
-				player.x = game_data.location.doors[correct_door].player_start.x;
-				player.y = game_data.location.doors[correct_door].player_start.y;
-			}
-		}
-	}
-
-	//From Older Version
-	// function viewport(location) {
-	// 	if (background.leftmostcanvas_width >= background.width && lyda.x_direction == "right") {
-	// 	     lyda.x < canvas.width - 50 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
-	// 	        lyda.y += game_data.y_velocity;
-	// 	   }
-	// 	   //Viewport at left edge of level
-	// 	   else if (background.leftmost <= 1 && lyda.x_direction == "left") {
-	// 	     lyda.x > 1 ? lyda.x += game_data.x_velocity : lyda.x = lyda.x;
-	// 	     lyda.y += game_data.y_velocity;
-	// 	   }
-	// 	   //Viewport move left
-	// 	   else if (lyda.x < 250 && background.leftmost > 1 && lyda.x_direction == "left") {
-	// 	     background.leftmost += game_data.x_velocity;
-	// 	     lyda.y += game_data.y_velocity;      
-	//         
-	// 	      }
-	// 	   //Viewport move right
-	// 	   else if (lyda.x > 350 && background.leftmostcanvas_width < background.width && lyda.x_direction == "right") {
-	// 	     background.leftmost += game_data.x_velocity;
-	// 	     lyda.y += game_data.y_velocity;
-	// 	   }    
-	//    
-	// 	   //Viewport doesn't move, lyda does
-	// 	   else {
-	// 	     lyda.x += game_data.x_velocity;
-	// 	     lyda.y += game_data.y_velocity;      
-	// 	   }
-	// }
-	
 	//TODO Update should do a bunch of stuff based on key combinations, or lack thereof
 	//Call functions to update object data, ie move objects, or destroy them
 	//Additionally, check anything that should be checked each frame
@@ -637,7 +509,14 @@
 		for (var i = 0; i < game_data.location.enemies.length; i++) {
 			var hit = colCheck(lyda, game_data.location.enemies[i]);
 			if (hit != null) {
-				//Do whatever we need to happen on hit here
+				if (lyda.facing_direction.x == "left") {
+					lyda.x += 10;
+
+				}
+				else if (lyda.facing_direction.x == "right") {
+					lyda.x -= 10;
+
+				}
 			}
 		}
 		
@@ -658,6 +537,7 @@
 				if (hit != null) {
 					console.log("hit");
 					game_data.location.enemies[i].health -= 5;
+					bullets.splice(b, 1);
 				}
 			}
 			
@@ -675,14 +555,10 @@
 			game_data.location.enemies[i].y += 1;
 		}
 		
-		//Add enemies at random
-		if (keydown.d) {
-			game_data.location.enemies.push({type: "Bobcat", x:Math.floor(Math.random()*(200+1)), y:Math.floor(Math.random()*(300+1)), width:26, height:41, health:10});
-		}
 		
 		//Firing weapon pushes bullet into bullet array
-		if (keydown.s && Math.abs(game_data.last_bullet - current_time) > lyda.weapon.fire_rate) {
-			game_data.last_bullet = new Date();
+		if (keydown.s && Math.abs(lyda.last_bullet - current_time) > lyda.weapon.fire_rate) {
+			lyda.last_bullet = new Date();
 			if (lyda.facing_direction.x == "right") {
 				bullets.push({x: (lyda.x + lyda.weapon.gun_direction_right.x), 
 					y: (lyda.y + lyda.weapon.gun_direction_right.y), 
@@ -698,7 +574,6 @@
 					width:lyda.weapon.bullet_width, 
 					direction: lyda.facing_direction.x
 				});
-				
 			}
 		}
 		
@@ -745,6 +620,12 @@
 			lyda.weapon = weapon.beam_torch;
 		}
 		
+		//Add enemies at random
+		if (keydown.d) {
+			game_data.location.enemies.push({type: "Bobcat", x:Math.floor(Math.random()*(200+1)), y:Math.floor(Math.random()*(300+1)), width:26, height:41, health:10});
+		}
+		
+		
 		//Calculate velocities
 		x_velocity_lyda(lyda);
 		y_velocity_lyda(lyda);	
@@ -756,12 +637,15 @@
 		lyda.x += lyda.x_velocity;
 		lyda.y += lyda.y_velocity;
 	}
+	
+	//****************
+	//****************
+	// Draw Loop
+	//****************
+	//****************
+	
 
-
-//Set frame rate
-	var fps = game_data.fps;
-
-//Main drawing function calls itself, runs update, and draws everything it should
+	//Main drawing function calls itself, runs update, and draws everything it should
 	function draw() {
 		setTimeout(function() {
 			game_data.current_frame == game_data.fps ? game_data.current_frame = 0 : game_data.current_frame += 1;
@@ -773,12 +657,12 @@
 			cxt.clearRect(0, 0, canvas.width, canvas.height);
 			//Draw the current location with its data
 			background_draw(game_data.location);
-			//Draw the current location's enemy data
-			enemy_draw(game_data.location);
 			//Draw the current location's item data
 			
 			//Draw black boxes for collision map
 			collision_map_draw(game_data.location);
+			//Draw the current location's enemy data
+			enemy_draw(game_data.location);			
 			//Draw Lyda along with her stat
 			lyda.draw();
 			//Weapon and bullets
@@ -789,14 +673,19 @@
 			foreground_draw(game_data.location);
 			useful_metrics();
 
-		}, 1000 / fps);
+		}, 1000 / game_data.fps);
 	}
 
 	//Start it all off
 	draw();	
 	
 
-
+	//****************
+	//****************
+	// On Screen Metrics
+	//****************
+	//****************
+	
 	function useful_metrics() {
 		$("#current_frame")[0].innerHTML = game_data.current_frame;
 		$("#lyda_x")[0].innerHTML = lyda.x_velocity;
