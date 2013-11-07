@@ -78,7 +78,7 @@
 		x_max: 5,
 		y_max: 8,
 		x_acceleration: 1.2,
-		y_acceleration: 1.2,
+		y_acceleration: 1.1,
 		friction: .8,
 		location: location1
 	};
@@ -88,14 +88,16 @@
 	//***********************
 		
 	var weapon = {
-		name: "normal",
 		normal: {
+			name: "normal",			
 			//Image for muzzle flash
 			muzzle: weapon_normal_muzzle_image, 
 			//How long the muzzle stays lit before going away
 			muzzle_rate: 50, 
 			//Image to use for bullet
 			bullet_image: weapon_normal_bullet_image, 
+			//Bullet damage
+			damage: 5,
 			//Max number of bullets on screen
 			max_bullets:8, 
 			//How fast it travels each frame
@@ -123,7 +125,54 @@
 			bullet_width:50,
 			gun_direction_right: {x:33, y:8},
 			gun_direction_left: {x:-45, y:8}
-		}
+		},
+		velocity_wave: {
+			name: "velocity_wave",			
+			//Image for muzzle flash
+			muzzle: weapon_normal_muzzle_image, 
+			//How long the muzzle stays lit before going away
+			muzzle_rate: 50, 
+			//Image to use for bullet
+			bullet_image: weapon_normal_bullet_image, 
+			//Bullet damage
+			damage: 5,
+			//Max number of bullets on screen
+			max_bullets:10, 
+			//How fast it travels each frame
+			bullet_speed_x: 10, 
+			//How long before you can fire again
+			fire_rate: 1, 
+			//Size of bullet box
+			bullet_height:10, 
+			bullet_width:10,
+			//Offset to line up gun
+			gun_direction_right: {x:15, y:8},
+			gun_direction_left: {x:0, y:8}
+		},
+		block_bullet: {
+			name: "block_bullet",			
+			//Image for muzzle flash
+			muzzle: weapon_normal_muzzle_image, 
+			//How long the muzzle stays lit before going away
+			muzzle_rate: 50, 
+			//Image to use for bullet
+			bullet_image: block_bullet_image, 
+			//Bullet damage
+			damage: 5,
+			//Max number of bullets on screen
+			max_bullets:500, 
+			//How fast it travels each frame
+			bullet_speed_x: 5, 
+			//How long before you can fire again
+			fire_rate: 1, 
+			//Size of bullet box
+			bullet_height:10, 
+			bullet_width:10,
+			//Offset to line up gun
+			gun_direction_right: {x:15, y:8},
+			gun_direction_left: {x:0, y:8}
+		}		
+		
 	};
 	
 	//placeholder for bullets
@@ -330,7 +379,6 @@
 	//TODO: implement basic viewport logic
 	//TODO: tie all x, y coordinate data to the speed and location of viewport
 
-	
 	//***********************	
 	//Collision Checks
 	//***********************
@@ -536,7 +584,7 @@
 				var hit = colCheck(game_data.location.enemies[i], bullets[b]);
 				if (hit != null) {
 					console.log("hit");
-					game_data.location.enemies[i].health -= 5;
+					game_data.location.enemies[i].health -= lyda.weapon.damage;
 					bullets.splice(b, 1);
 				}
 			}
@@ -551,7 +599,7 @@
 			else {
 				game_data.location.enemies[i].x += 2;
 			}
-
+			
 			game_data.location.enemies[i].y += 1;
 		}
 		
@@ -617,7 +665,7 @@
 		}
 		
 		if (keydown.w) {
-			lyda.weapon = weapon.beam_torch;
+			lyda.weapon == weapon.normal ? lyda.weapon = weapon.velocity_wave : lyda.weapon = weapon.normal;
 		}
 		
 		//Add enemies at random

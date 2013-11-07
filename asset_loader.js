@@ -51,3 +51,6 @@ weapon_normal_muzzle_image.src = "assets/normal_muzzle.png";
 
 var weapon_normal_bullet_image = new Image();
 weapon_normal_bullet_image.src = "assets/normal_bullet.png";
+
+var block_bullet_image = new Image();
+block_bullet_image.src = "assets/block_bullet.png";
