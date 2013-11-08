@@ -4,6 +4,9 @@ collision_image.src = "assets/Noezark_testscene_collision.png";
 var background_image = new Image();
 background_image.src = "assets/Noezark_testscene1.png";
 
+var gray_background_image = new Image();
+gray_background_image.src = "assets/gray-background.png";
+
 var lyda_image = new Image();
 lyda_image.src = "assets/lyda.png";
 

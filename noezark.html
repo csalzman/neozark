@@ -50,7 +50,8 @@
 	<script type="text/javascript" src="asset_loader.js"></script>
 
 	<!-- Load Locations -->
-	<script type="text/javascript" src="location_loader.js"></script>
+	<!-- // <script type="text/javascript" src="location_loader.js"></script> -->
+	<script type="text/javascript" src="testlevel_location_loader.js"></script>	
 
 	<!-- Main Game Script -->
 	<script type="text/javascript">
@@ -80,7 +81,7 @@
 		x_acceleration: 1.2,
 		y_acceleration: 1.1,
 		friction: .8,
-		location: location1
+		location: start
 	};
 	
 	//***********************	
@@ -98,6 +99,8 @@
 			bullet_image: weapon_normal_bullet_image, 
 			//Bullet damage
 			damage: 5,
+			//Distance enemy is knocked back
+			knockback:20,
 			//Max number of bullets on screen
 			max_bullets:8, 
 			//How fast it travels each frame
@@ -135,16 +138,18 @@
 			//Image to use for bullet
 			bullet_image: weapon_normal_bullet_image, 
 			//Bullet damage
-			damage: 5,
+			damage: 1,
 			//Max number of bullets on screen
 			max_bullets:10, 
 			//How fast it travels each frame
-			bullet_speed_x: 10, 
+			bullet_speed_x: 10,
+			//Enemy knockback
+			knockback: 0, 
 			//How long before you can fire again
 			fire_rate: 1, 
 			//Size of bullet box
-			bullet_height:10, 
-			bullet_width:10,
+			bullet_height:5, 
+			bullet_width:5,
 			//Offset to line up gun
 			gun_direction_right: {x:15, y:8},
 			gun_direction_left: {x:0, y:8}
@@ -382,11 +387,16 @@
 	//***********************	
 	//Collision Checks
 	//***********************
-	
 	//TODO: pull out any collision logic in the update loop into separate collision functions
 	
-	//Collision check code pulled from: http://www.somethinghitme.com/2013/04/16/creating-a-canvas-platformer-tutorial-part-tw/
+
+
 	//TODO: only check for collision between objects that are nearby each other to cut down on processing
+	//TODO: pull out moving the objects to a separate function, or an optional parameter.
+			//Will need to reuse this code for things like enemy knockback, or triggers
+
+	//Basic collision check code pulled from: http://www.somethinghitme.com/2013/04/16/creating-a-canvas-platformer-tutorial-part-tw/
+
 	function colCheck(shapeA, shapeB) {
 		// get the vectors to check against
 		var vX = (shapeA.x + (shapeA.width / 2)) - (shapeB.x + (shapeB.width / 2)),
@@ -425,6 +435,7 @@
 	
 	//Check if Lyda is colliding with a door
 	//TODO Logic for door types
+	//TODO logic for namespaced doors
 	function check_door(player) {
 		for (var i = 0; i < game_data.location.doors.length; i++) {
 			var hit = colCheck(player, game_data.location.doors[i]);
