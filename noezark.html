@@ -82,7 +82,6 @@
 				
 	var canvas = document.getElementById("main")		
 	var cxt = canvas.getContext("2d");
-
 	
 	//TODO Lock down order of object declaration
 	//TODO bring in all game level data into this object
@@ -100,18 +99,14 @@
 		y_max: 8,
 		x_acceleration: 1.2,
 		y_acceleration: 1.1,
+		viewport_x: function() {return lyda.x - (game_data.viewport_width/2)},
+		viewport_y: function() {return lyda.y - (game_data.viewport_height/2)},
+		viewport_width: 600,
+		viewport_height: 450,
 		friction: .8,
 		location: start
 	};
-	
-	var viewport = {
-		width: 600,
-		height: 450,
-		x:0,
-		y:0,
-		offset_testing:0
-	}
-	
+		
 	//***********************	
 	//Weapon data and functions
 	//***********************
@@ -292,12 +287,13 @@
 				//Crop left determines where to crop the sprite sheet
 				//Add in a y value as well and stack directions on top of each other
 				var crop_left = this.keyframe * this.width;
-				cxt.drawImage(lyda_image, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+				cxt.drawImage(lyda_image, crop_left, 0, this.width, this.height, game_data.viewport_width/2, game_data.viewport_height/2, this.width, this.height);
 			}
 			else if (this.facing_direction.x == "left") {
 				var crop_left = this.keyframe * this.width;
-				cxt.drawImage(lyda_image_left, crop_left, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+				cxt.drawImage(lyda_image_left, crop_left, 0, this.width, this.height, game_data.viewport_width/2, game_data.viewport_height/2, this.width, this.height);
 			}
+			
 		}
 	}
 	
@@ -345,7 +341,7 @@
 	function background_draw(location) {
 		var background_array = location.background.length;
 		for (var i = 0; i < background_array; i++ ) {
-			cxt.drawImage(location.background[i], game_data.viewport_left, game_data.viewport_top, game_data.viewport_width, game_data.viewport_height, 0, 0, game_data.viewport_width, game_data.viewport_height);
+			cxt.drawImage(location.background[i], game_data.viewport_x(), game_data.viewport_y(), game_data.viewport_width, game_data.viewport_height, 0, 0, game_data.viewport_width, game_data.viewport_height);
 		}
 	}
 	
@@ -355,7 +351,7 @@
 	function foreground_draw(location) {
 		var foreground_array = location.foreground.length;
 		for (var i = 0; i < foreground_array; i++ ) {
-			cxt.drawImage(location.foreground[i], game_data.viewport_left, game_data.viewport_top, game_data.viewport_width, game_data.viewport_height, 0, 0, game_data.viewport_width, game_data.viewport_height);
+			cxt.drawImage(location.foreground[i], game_data.viewport_x(), game_data.viewport_y(), game_data.viewport_width, game_data.viewport_height, 0, 0, game_data.location.full_width, game_data.location.full_height);
 		}
 	}
 
@@ -363,10 +359,13 @@
 	function collision_map_draw(location) {
 		var collision_map_array = location.collision_map.length;
 		for (var i = 0; i < collision_map_array; i++ ) {
-			cxt.globalAlpha = 0.5;
-			cxt.fillStyle="#FF0000";
-			cxt.fillRect(location.collision_map[i].x, location.collision_map[i].y, location.collision_map[i].width, location.collision_map[i].height);
-			cxt.globalAlpha = 1.0;
+			var drawx = location.collision_map[i].x - game_data.viewport_x();
+			var drawy = location.collision_map[i].y - game_data.viewport_y();
+				cxt.globalAlpha = 0.5;
+				cxt.fillStyle="#FF0000";
+				cxt.fillRect(drawx, drawy, location.collision_map[i].width, location.collision_map[i].height);
+				cxt.globalAlpha = 1.0;
+
 		}
 	}
 	
@@ -374,8 +373,11 @@
 	function draw_doors(location) {
 		var doors_array = location.doors.length;
 		for (var i = 0; i < doors_array; i++ ) {
+			var drawx = location.doors[i].x - game_data.viewport_x();
+			var drawy = location.doors[i].y - game_data.viewport_y();
 			location.doors[i].locked == true ? cxt.fillStyle="#838B8B" : cxt.fillStyle="#66CCCC";
-			cxt.fillRect(location.doors[i].x, location.doors[i].y, location.doors[i].width, location.doors[i].height);
+
+			cxt.fillRect(drawx, drawy, location.doors[i].width, location.doors[i].height);
 		}
 	}	
 	
@@ -401,7 +403,9 @@
 	function enemy_draw(location) {
 		var enemies_array = location.enemies.length;
 		for (var i = 0; i < enemies_array; i++ ) {
-			cxt.drawImage(enemy_image(location.enemies[i].type), location.enemies[i].x, location.enemies[i].y);
+			var drawx = location.enemies[i].x - game_data.viewport_x();
+			var drawy = location.enemies[i].y - game_data.viewport_y();			
+			cxt.drawImage(enemy_image(location.enemies[i].type), drawx, drawy);
 		}
 	}
 	
@@ -418,17 +422,16 @@
 		var viewport_move_x = 250;
 		var viewport_move_y = 100;
 		
-		
 		//How far to move
 
-		var offset = lyda.x - (viewport.width / 2);
+		var offset = lyda.x - (game_data.viewport_width / 2);
 
 		// viewport.x += offset;
-		console.log(viewport.x);
+		// console.log(viewport.x);
 		//Actualy move
 		
-		if (viewport.x <= location.full_width) {
-			viewport.x += offset;
+		if (game_data.viewport_x <= location.full_width) {
+			game_data.viewport_x += offset;
 			lyda.x -= offset;
 		
 			for (var p = 0; p < game_data.location.collision_map.length; p++) {
@@ -505,7 +508,7 @@
 				
 				//switch to new location
 				game_data.location = eval(game_data.location.doors[i].link.location);
-				console.log(game_data.location);
+
 				//Find door in new location
 				//Placeholder for the correct door in the array
 				var correct_door = "";
@@ -800,7 +803,7 @@
 			cxt.fillRect(350, 0, 3, 600);			
 			
 			useful_metrics();
-
+			
 		}, 1000 / game_data.fps);
 	}
 
@@ -821,8 +824,8 @@
 		$("#lyda_x")[0].innerHTML = lyda.x;
 		$("#lyda_y")[0].innerHTML = lyda.y;				
 		$("#location")[0].innerHTML = game_data.location.name;
-		$("#viewport_left")[0].innerHTML = viewport.x;
-		$("#viewport_top")[0].innerHTML = viewport.y;		
+		// $("#viewport_left")[0].innerHTML = viewport.x;
+		// $("#viewport_top")[0].innerHTML = viewport.y;		
 	}
 	</script>
 </body>
