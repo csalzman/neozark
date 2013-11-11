@@ -17,6 +17,11 @@
 	  }
 	  .metrics_label {
 		  font-weight:bold;
+		  font-size:12px;
+		  line-height:12px;
+	  }
+	  .metrics_label span {
+		  color:blue;
 	  }
 	</style>
 </head>
@@ -31,14 +36,31 @@
 		</p>
 
 		<p class="metrics_label">Lyda x Velocity<br/>
-			<span id="lyda_x"></span>
+			<span id="lyda_x_velocity"></span>
 		</p>
 		
 		<p class="metrics_label">Lyda y Velocity<br/>
+			<span id="lyda_y_velocity"></span>
+		</p>
+		<p class="metrics_label">Lyda x<br/>
+			<span id="lyda_x"></span>
+		</p>
+		
+		<p class="metrics_label">Lyda y<br/>
 			<span id="lyda_y"></span>
 		</p>
+
 		<p class="metrics_label">Location<br/>
 			<span id="location"></span>
+		</p>
+
+
+		<p class="metrics_label">Viewport Left<br/>
+			<span id="viewport_left"></span>
+		</p>
+
+		<p class="metrics_label">Viewport Top<br/>
+			<span id="viewport_top"></span>
 		</p>
 
 	</div>
@@ -70,19 +92,25 @@
 	//***********************
 	
 	var game_data = {
-		fps: 60,
+		fps: 120,
 		current_frame: 0,
-		screen_left: 0,
-		screen_top: 0,
 		x_velocity: 0,
 		y_velocity: 0,
-		x_max: 5,
+		x_max: 4,
 		y_max: 8,
 		x_acceleration: 1.2,
 		y_acceleration: 1.1,
 		friction: .8,
 		location: start
 	};
+	
+	var viewport = {
+		width: 600,
+		height: 450,
+		x:0,
+		y:0,
+		offset_testing:0
+	}
 	
 	//***********************	
 	//Weapon data and functions
@@ -236,7 +264,7 @@
 		//placeholder for recording her x movement
 		animation_x_movement: 0,
 		//At what x movement does the frame advance
-		animation_frame_advance: 8,
+		animation_frame_advance: 5,
 		//x can be left or right, y can be up, down, or forward
 		facing_direction: {x: "left", y: "forward"},
 		//Speed at any one time
@@ -317,7 +345,7 @@
 	function background_draw(location) {
 		var background_array = location.background.length;
 		for (var i = 0; i < background_array; i++ ) {
-			cxt.drawImage(location.background[i], game_data.screen_left, game_data.screen_top);
+			cxt.drawImage(location.background[i], game_data.viewport_left, game_data.viewport_top, game_data.viewport_width, game_data.viewport_height, 0, 0, game_data.viewport_width, game_data.viewport_height);
 		}
 	}
 	
@@ -327,7 +355,7 @@
 	function foreground_draw(location) {
 		var foreground_array = location.foreground.length;
 		for (var i = 0; i < foreground_array; i++ ) {
-			cxt.drawImage(location.foreground[i], game_data.screen_left, game_data.screen_top);
+			cxt.drawImage(location.foreground[i], game_data.viewport_left, game_data.viewport_top, game_data.viewport_width, game_data.viewport_height, 0, 0, game_data.viewport_width, game_data.viewport_height);
 		}
 	}
 
@@ -383,6 +411,38 @@
 	
 	//TODO: implement basic viewport logic
 	//TODO: tie all x, y coordinate data to the speed and location of viewport
+	
+	function viewport_move(location) {
+
+		//When to move
+		var viewport_move_x = 250;
+		var viewport_move_y = 100;
+		
+		
+		//How far to move
+
+		var offset = lyda.x - (viewport.width / 2);
+
+		// viewport.x += offset;
+		console.log(viewport.x);
+		//Actualy move
+		
+		if (viewport.x <= location.full_width) {
+			viewport.x += offset;
+			lyda.x -= offset;
+		
+			for (var p = 0; p < game_data.location.collision_map.length; p++) {
+				game_data.location.collision_map[p].x -= offset; 
+			}
+			for (var p = 0; p < game_data.location.enemies.length; p++) {
+				game_data.location.enemies[p].x -= offset; 
+			}
+			for (var p = 0; p < game_data.location.doors.length; p++) {
+				game_data.location.doors[p].x -= offset; 
+			}
+		}
+		
+	}
 
 	//***********************	
 	//Collision Checks
@@ -693,8 +753,12 @@
 		animation_frame_lyda(lyda);
 		
 		//Move Lyda based on velocities
+		
 		lyda.x += lyda.x_velocity;
 		lyda.y += lyda.y_velocity;
+
+		//Calculate viewport
+		viewport_move(game_data.location);
 	}
 	
 	//****************
@@ -730,6 +794,11 @@
 			draw_doors(game_data.location);
 			//Draw foreground elements
 			foreground_draw(game_data.location);
+			
+			cxt.fillStyle="#d9ef1b";
+			cxt.fillRect(250, 0, 3, 600);
+			cxt.fillRect(350, 0, 3, 600);			
+			
 			useful_metrics();
 
 		}, 1000 / game_data.fps);
@@ -747,9 +816,13 @@
 	
 	function useful_metrics() {
 		$("#current_frame")[0].innerHTML = game_data.current_frame;
-		$("#lyda_x")[0].innerHTML = lyda.x_velocity;
-		$("#lyda_y")[0].innerHTML = lyda.y_velocity;
+		$("#lyda_x_velocity")[0].innerHTML = lyda.x_velocity;
+		$("#lyda_y_velocity")[0].innerHTML = lyda.y_velocity;
+		$("#lyda_x")[0].innerHTML = lyda.x;
+		$("#lyda_y")[0].innerHTML = lyda.y;				
 		$("#location")[0].innerHTML = game_data.location.name;
+		$("#viewport_left")[0].innerHTML = viewport.x;
+		$("#viewport_top")[0].innerHTML = viewport.y;		
 	}
 	</script>
 </body>

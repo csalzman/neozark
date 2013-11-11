@@ -7,6 +7,9 @@ background_image.src = "assets/Noezark_testscene1.png";
 var gray_background_image = new Image();
 gray_background_image.src = "assets/gray-background.png";
 
+var fiber_background_image = new Image();
+fiber_background_image.src = "assets/fiberedbackground.jpg";
+
 var lyda_image = new Image();
 lyda_image.src = "assets/lyda.png";
 
