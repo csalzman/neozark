@@ -1,11 +1,11 @@
 
-var location0 = {
+var start = {
 	//Begin information specific to the location if any
 	
 	//End location specific information
 	//Begin information needed for all locations
 	//List all elements, will be drawn in sequence
-	name: "Grassy plain",
+	name: "start",
 	background: new Array(
 		background_mall_grass_image,
 		background_mall_ground_image, 
@@ -64,7 +64,7 @@ var location1 = {
 	),
 	//Doors are entrance and exit points on map
 	doors: new Array(
-		{type:"normal", name: "west", x:0, y:320, height:100, width:10, locked: false, player_start: {x:20, y:320}, link: {location: "location0", door: "east"}},
+		{type:"normal", name: "west", x:0, y:320, height:100, width:10, locked: false, player_start: {x:20, y:320}, link: {location: "start", door: "east"}},
 		{type:"normal", name: "east", x:580, y:250, height:100, width:10, locked: false, player_start: {x:530, y:320}, link: {location: "location2", door: "west"}}			
 	),
 	//Items

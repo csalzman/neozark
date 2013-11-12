@@ -31,7 +31,6 @@ var start = {
 			{x:600, y:350, width:20, height:100},
 			{x:200, y:350, width:200, height:100},
 			{x:275, y:250, width:50, height:100}
-
 		),
 		//Enemies and locations
 		enemies: new Array(
@@ -39,7 +38,7 @@ var start = {
 		),
 		//Doors are entrance and exit points on map
 		doors: new Array(
-			{type:"normal", name: "east", x:780, y:320, height:100, width:10, locked: false, player_start: {x:540, y:320}, link: {location: "telecoil_room", door: "upper_west"}}
+			{type:"normal", name: "east", x:780, y:320, height:100, width:10, locked: true, player_start: {x:540, y:320}, link: {location: "telecoil_room", door: "upper_west"}}
 		),
 		//Items
 		item: new Array(
@@ -57,7 +56,7 @@ var start = {
 		full_width: 800,
 		full_height: 1000,
 		background: new Array(
-			gray_background_image
+			
 		),
 		foreground: new Array(),
 		//Walls and platforms
@@ -67,8 +66,7 @@ var start = {
 			{x:0, y:400, width:600, height:10},
 			{x:0, y:400, width:10, height:300},
 			{x:0, y:690, width:1000, height:10},
-			{x:990, y:0, width:10, height:700},			
-			{x:275, y:250, width:50, height:100}
+			{x:990, y:0, width:10, height:700}
 
 		),
 		//Enemies and locations
@@ -96,7 +94,7 @@ var start = {
 		full_width: 500,
 		full_height: 200,
 		background: new Array(
-			gray_background_image
+			
 		),
 		foreground: new Array(),
 		//Walls and platforms
@@ -133,7 +131,7 @@ var start = {
 		full_width: 200,
 		full_height: 800,
 		background: new Array(
-			gray_background_image
+			
 		),
 		foreground: new Array(),
 		//Walls and platforms
